@@ -20,6 +20,8 @@ class CblasAcmlFormula < Formula
   def install
     FileUtils.rm_f "Makefile.in"
 
+    acml_prefix = `#{@modulecmd} display acml 2>&1|grep ACML_DIR`.split[2]
+
     patch <<-EOF.strip_heredoc
       diff --git a/Makefile.in b/Makefile.in
       new file mode 100644
@@ -29,8 +31,8 @@ class CblasAcmlFormula < Formula
       @@ -0,0 +1,12 @@
       +SHELL = /bin/sh
       +PLAT = LINUX
-      +BLLIB = /opt/acml/5.2.0/gfortran64/lib/libacml.a
-      +CBLIB = /sw/xk6/cblas/20110120/sles11.1_gnu4.7.2_acml5.2.0/lib/libcblas.a
+      +BLLIB = #{acml_prefix}/gfortran64/lib/libacml.a
+      +CBLIB = #{prefix}/lib/libcblas.a
       +CC = gcc
       +FC = gfortran
       +LOADER = $(FC)
