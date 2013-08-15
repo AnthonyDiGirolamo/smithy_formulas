@@ -3,7 +3,7 @@ class PythonNumpyFormula < Formula
   url "http://downloads.sourceforge.net/project/numpy/NumPy/1.7.1/numpy-1.7.1.tar.gz"
 
   depends_on do
-    packages = [ "cblas/20110120/*acml5.2.0*", "acml/5.2.0" ]
+    packages = [ "cblas/20110120/*acml*" ]
     case build_name
     when /python3.3/
       packages << "python/3.3.0"
@@ -41,7 +41,8 @@ class PythonNumpyFormula < Formula
   def install
     module_list
 
-    acml_prefix = "#{acml.prefix}/gfortran64"
+    acml_prefix = `#{@modulecmd} display acml 2>&1|grep ACML_DIR`.split[2]
+    acml_prefix += "/gfortran64"
 
     FileUtils.mkdir_p "#{prefix}/lib"
     FileUtils.cp "#{cblas.prefix}/lib/libcblas.a", "#{prefix}/lib", verbose: true
@@ -91,8 +92,10 @@ class PythonNumpyFormula < Formula
     end
     FileUtils.mkdir_p libdirs.first
 
-    system "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{python_binary} setup.py build"
-    system "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{python_binary} setup.py install --prefix=#{prefix} --compile"
+    python_start_command = "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{python_binary} "
+
+    system "#{python_start_command} setup.py build"
+    system "#{python_start_command} setup.py install --prefix=#{prefix} --compile"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
