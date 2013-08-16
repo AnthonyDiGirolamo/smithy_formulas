@@ -8,9 +8,12 @@ class PythonNumexprFormula < Formula
     case build_name
     when /python3.3/
       packages << "python/3.3.0"
+      packages << "python_numpy/*/*python3.3.0*"
     when /python2.7/
       packages << "python/2.7.3"
+      packages << "python_numpy/*/*python2.7.3*"
     when /python2.6/
+      packages << "python_numpy/*/*python2.6.3*"
     end
     packages
   end
@@ -27,14 +30,16 @@ class PythonNumexprFormula < Formula
     when /cray/
       m << "load PrgEnv-cray"
     end
-    m << "unload python"
 
+    m << "unload python"
     case build_name
     when /python3.3/
       m << "load python/3.3.0"
     when /python2.7/
       m << "load python/2.7.3"
     end
+
+    m << "load python_numpy"
     m
   end
 
@@ -84,10 +89,6 @@ class PythonNumexprFormula < Formula
     }
     set PREFIX <%= @package.version_directory %>/$BUILD
 
-    prepend-path PATH            $PREFIX/bin
-    prepend-path LD_LIBRARY_PATH $PREFIX/lib
-    prepend-path LD_LIBRARY_PATH $PREFIX/lib64
-    prepend-path MANPATH         $PREFIX/share/man
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
