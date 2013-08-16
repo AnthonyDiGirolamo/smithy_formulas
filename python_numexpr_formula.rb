@@ -13,7 +13,7 @@ class PythonNumexprFormula < Formula
       packages << "python/2.7.3"
       packages << "python_numpy/*/*python2.7.3*"
     when /python2.6/
-      packages << "python_numpy/*/*python2.6.3*"
+      packages << "python_numpy/*/*python2.6.8*"
     end
     packages
   end
