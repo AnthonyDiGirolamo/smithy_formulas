@@ -4,7 +4,7 @@ class PythonH5pyFormula < Formula
   sha1 "7419cadd9892ab3a232e8ce779f3587ccff9ebff"
 
   depends_on do
-    packages = [ "python_numpy", "hdf5/1.8.8/*gnu*" ]
+    packages = [ "python_numpy" ]
     case build_name
     when /python3.3/
       packages << "python/3.3.0"
@@ -44,8 +44,10 @@ class PythonH5pyFormula < Formula
   def install
     module_list
 
-    ENV["CPPFLAGS"] = "-I#{hdf5.prefix}/include"
-    ENV["LDFLAGS"]  = "-L#{hdf5.prefix}/lib"
+    hdf5_prefix = `#{@modulecmd} display hdf5/1.8.8 2>&1|grep HDF5_DIR`.split[2]
+
+    ENV["CPPFLAGS"] = "-I#{hdf5_prefix}/include"
+    ENV["LDFLAGS"]  = "-L#{hdf5_prefix}/lib"
 
     python_binary = "python"
     libdirs = []
