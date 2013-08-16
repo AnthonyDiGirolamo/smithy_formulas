@@ -1,35 +1,32 @@
-class PythonNumexprFormula < Formula
-  homepage "http://code.google.com/p/numexpr/"
-  url "http://numexpr.googlecode.com/files/numexpr-2.1.tar.gz"
-  sha1 "4cce65ba0581bed2a4b3a43f7a102c359404bc44"
+class PythonCythonFormula < Formula
+  homepage "http://cython.org/"
+  url "http://cython.org/release/Cython-0.19.1.tar.gz"
+  sha1 "f8c8baa2c358a7482de71d0c744bf19caaae6621"
 
   depends_on do
     packages = [ ]
     case build_name
     when /python3.3/
       packages << "python/3.3.0"
-      packages << "python_numpy/*/*python3.3.0*"
     when /python2.7/
       packages << "python/2.7.3"
-      packages << "python_numpy/*/*python2.7.3*"
     when /python2.6/
-      packages << "python_numpy/*/*python2.6.8*"
     end
     packages
   end
 
   module_commands do
     m = [ "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-cray PrgEnv-intel" ]
-    case build_name
-    when /gnu/
-      m << "load PrgEnv-gnu"
-    when /pgi/
-      m << "load PrgEnv-pgi"
-    when /intel/
-      m << "load PrgEnv-intel"
-    when /cray/
-      m << "load PrgEnv-cray"
-    end
+    # case build_name
+    # when /gnu/
+    #   m << "load PrgEnv-gnu"
+    # when /pgi/
+    #   m << "load PrgEnv-pgi"
+    # when /intel/
+    #   m << "load PrgEnv-intel"
+    # when /cray/
+    #   m << "load PrgEnv-cray"
+    # end
 
     m << "unload python"
     case build_name
@@ -39,7 +36,6 @@ class PythonNumexprFormula < Formula
       m << "load python/2.7.3"
     end
 
-    m << "load python_numpy"
     m
   end
 
@@ -74,9 +70,6 @@ class PythonNumexprFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    module load python_numpy
-    prereq python_numpy
-
     if [ is-loaded python/3.3.0 ] {
       set BUILD python3.3.0
       set LIBDIR python3.3
@@ -89,9 +82,11 @@ class PythonNumexprFormula < Formula
     }
     set PREFIX <%= @package.version_directory %>/$BUILD
 
+    prepend-path PATH            $PREFIX/bin
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
 
+    prepend-path PATH            /opt$PREFIX/bin
     prepend-path PYTHONPATH      /opt$PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      /opt$PREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
