@@ -28,7 +28,7 @@ class ImagemagickFormula < Formula
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
-    prepend-path PERL5PATH       $PREFIX/lib/perl5/site_perl
+    prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
     prepend-path MANPATH         $PREFIX/share/man
     setenv       IMAGEMAGICDIR   $PREFIX
   MODULEFILE
