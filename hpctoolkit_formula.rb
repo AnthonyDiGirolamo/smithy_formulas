@@ -2,13 +2,17 @@ class HpctoolkitFormula < Formula
   homepage "http://hpctoolkit.org"
   url "none"
 
-  module_commands [
-    "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel PrgEnv-cray",
-    "load PrgEnv-gnu",
-    "load subversion",
-    "load papi",
-    "load java",
-  ]
+  module_commands do
+    commands = [
+      "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel PrgEnv-cray",
+      "load PrgEnv-gnu",
+      "load subversion",
+      "load papi/5.1.0.2",
+      "load java",
+    ]
+    commands << "cudatoolkit" if build_name.include? "cuda"
+    commands
+  end
 
   def install
     module_list
@@ -32,13 +36,32 @@ class HpctoolkitFormula < Formula
     papi_prefix = module_environment_variable("papi", "PATH")
     papi_prefix = File.dirname(papi_prefix)
 
+    notice "PAPI DIR = " + papi_prefix
+
     Dir.chdir prefix+"/source/hpctoolkit"
-    system "./configure --prefix=#{prefix}", 
-      "HPC_LT_LDFLAGS='-all-static'",
+
+    config_args = [
+      "./configure --prefix=#{prefix}",
+      "HPC_LT_LDFLAGS='-all-static -L../../lib/stubs-gcc_s'",
       "--with-externals=#{prefix}",
-      "--with-papi=#{papi_prefix}"
+      "--with-papi=#{papi_prefix}",
+      "--enable-xop"
+    ]
+    if build_name.include?("cuda")
+      config_args << "--with-cuda=$CUDATOOLKIT_HOME"
+      config_args << "--enable-papi-c"
+    end
+
+    system config_args
     system "make"
     system "make install"
+
+    Dir.chdir prefix
+    files = Dir.glob("*")
+    files.delete("source")
+    files.delete("hpctoolkit-install.tar.gz")
+    system "tar cf hpctoolkit-install.tar " + files.join(' ')
+    system "gzip hpctoolkit-install.tar"
   end
 
   modulefile <<-EOF.strip_heredoc
@@ -52,11 +75,18 @@ class HpctoolkitFormula < Formula
 
     # runtime requires papi
     module load papi
+    prereq papi
 
     # viewers require java
     module load java
+    prereq java
 
-    set PREFIX <%= @package.prefix %>
+    if [ is-loaded cudatoolkit ] {
+      set build cle4.1_gnu4.7.2_papi5.1.0.2_cuda5.0.35.102
+    } else {
+      set build cle4.1_gnu4.7.2_papi5.1.0.2
+    }
+    set PREFIX <%= @package.version_directory %>/$build
 
     # temporary install to lustre for runtime libs
     set tmpinstall_hpctk /tmp/work/$env(USER)/.hpctk_install/$env(PE_ENV)
@@ -87,7 +117,7 @@ class HpctoolkitFormula < Formula
         # cleanup old stuff
         system test -d $tmpinstall_hpctk && rm -rf $tmpinstall_hpctk
         # copy the libs
-        system mkdir -p $tmpinstall_hpctk && cd $tmpinstall_hpctk && tar zxf $PREFIX/hpctoolkit-install.tar.gz 
+        system mkdir -p $tmpinstall_hpctk && cd $tmpinstall_hpctk && tar zxf $PREFIX/hpctoolkit-install.tar.gz
     }
   EOF
 end
