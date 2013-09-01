@@ -3,17 +3,20 @@ class SzipFormula < Formula
   url      "http://www.hdfgroup.org/ftp/lib-external/szip/2.1/src/szip-2.1.tar.gz"
   md5      "9229ef21fe4471281f0b632eb70376b1"
 
-  modules do
-    m = ["DefApps"]
+  module_commands do
+		pe = "PE-"
+		pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+
+    m = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
     when /gnu/
-      m << "PrgEnv-gnu"
+      m << "load #{pe}gnu"
     when /pgi/
-      m << "PrgEnv-pgi"
+      m << "load #{pe}pgi"
     when /intel/
-      m << "PrgEnv-intel"
+      m << "load #{pe}intel"
     when /cray/
-      m << "PrgEnv-cray"
+      m << "load #{pe}cray"
     end
   end
 
@@ -44,7 +47,7 @@ class SzipFormula < Formula
       ENV["FC"]  = "ftn"
     end
 
-    system "./configure --prefix=#{prefix} --enable-static --disable-shared"
+    system "./configure --prefix=#{prefix} --enable-static --enable-shared"
     system "make"
     system "make install"
   end
