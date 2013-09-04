@@ -22,6 +22,7 @@ class EsmfFormula < Formula
         commands << "swap intel intel/#{$1}"
       end
     end
+    commands << "swap xtpe-interlagos xtpe-istanbul"
     # netcdf/4.2.0 c++ api not compatible!
     commands << "load szip netcdf/4.1.3" if build_name.include?("netcdf")
     commands
@@ -58,8 +59,8 @@ class EsmfFormula < Formula
     end
 
     system "make info"
-    system "make -j 8 all"
-    system "make install"
+    system "make -j 8 all ; make install"
+    # system "make install"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -92,7 +93,6 @@ class EsmfFormula < Formula
     <% else %>
     set PREFIX <%= @package.prefix %>
     <% end %>
-
 
     set esmfpath $esmfbase
 
