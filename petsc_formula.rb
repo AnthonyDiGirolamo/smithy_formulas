@@ -203,4 +203,27 @@ class PetscFormula < Formula
     system "make all"
     system "make install"
   end
+
+  modulefile <<-MODULEFILE.strip_heredoc
+    #%Module
+    proc ModulesHelp { } {
+      puts stderr "<%= @package.name %> <%= @package.version %> provided by the OLCF"
+      puts stderr ""
+      puts stderr "This version of petsc was compiled with the configuration located in:"
+      puts stderr "<%= @package.prefix %>/source/config/petsc-configure.py"
+      }
+    }
+    module-whatis "<%= @package.name %> <%= @package.version %> provided by the OLCF"
+
+    set PREFIX <%= @package.prefix %>
+
+    conflict petsc
+    conflict petsc-complex
+    conflict cray-petsc
+
+    setenv PETSC_DIR $PREFIX
+
+    prepend-path PATH            $PREFIX/bin
+    prepend-path LD_LIBRARY_PATH $PREFIX/lib
+  MODULEFILE
 end
