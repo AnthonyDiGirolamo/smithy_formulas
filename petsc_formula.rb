@@ -3,7 +3,7 @@ class PetscFormula < Formula
   url "http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.4.2.tar.gz"
 
   module_commands do
-    commands = [ "unload PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi pgi netcdf hdf5" ]
+    commands = [ "unload PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi acml cmake cray-hdf5 hdf5 cray-tpsl" ]
     case build_name
     when /pgi/
       commands << "load PrgEnv-pgi"
