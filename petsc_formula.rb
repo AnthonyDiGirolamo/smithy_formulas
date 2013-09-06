@@ -89,7 +89,7 @@ class PetscFormula < Formula
 
     debug = prefix.include?("debug") ? 1 : 0
 
-    if build_name.include?("complex")
+    if prefix.include?("complex")
       scalar           = "complex"
       hypre_options    = ""
       spai_options     = ""
