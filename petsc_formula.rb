@@ -211,7 +211,6 @@ class PetscFormula < Formula
       puts stderr ""
       puts stderr "This version of petsc was compiled with the configuration located in:"
       puts stderr "<%= @package.prefix %>/source/config/petsc-configure.py"
-      }
     }
     module-whatis "<%= @package.name %> <%= @package.version %> provided by the OLCF"
 
