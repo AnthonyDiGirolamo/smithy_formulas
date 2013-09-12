@@ -1,23 +1,23 @@
 class OpenmpiFormula < Formula
   homepage "http://www.open-mpi.org"
-  url      "http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.3.tar.bz2"
-  md5      "eedb73155a7a40b0b07718494298fb25"
-  sha1     "a61aa2dee4c47d93d88e49ebed36de25df4f6492"
+  url      "http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.5.tar.bz2"
+  md5      "03aed2a4aa4d0b27196962a2a65fc475"
+  sha1     "93859d515b33dd9a0ee6081db285a2d1dffe21ce"
 
-  modules do
-    if build_name =~ /gnu/
-      if build_name =~ /gnu4.6.2/
-        ["gcc/4.6.2"]
-      elsif build_name =~ /gnu4.1.2/
-        []
-      else
-        ["gcc"]
-      end
-    elsif build_name =~ /intel/
-      ["intel"]
-    elsif build_name =~ /pgi/
-      ["pgi"]
+  module_commands do
+    commands = [ "purge" ]
+    case build_name
+    when /gnu/
+      commands << "load gcc"
+      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+    when /pgi/
+      commands << "load pgi"
+      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
+    when /intel/
+      commands << "load intel"
+      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
     end
+    commands
   end
 
   def install
@@ -37,10 +37,56 @@ class OpenmpiFormula < Formula
       ENV["F77"] = "pgf77"
       ENV["FC"]  = "pgf90"
     end
+
     module_list
+
     system "./configure --prefix=#{prefix} --with-platform=optimized --enable-static --enable-contrib-no-build=vt"
     system "make"
     system "make install"
+  end
+
+  modulefile do
+    <<-EOF.strip_heredoc
+    #%Module
+    proc ModulesHelp { } {
+       puts stderr "<%= @package.name %> <%= @package.version %>"
+       puts stderr ""
+    }
+    # One line description
+    module-whatis "<%= @package.name %> <%= @package.version %>"
+
+    if [ is-loaded gcc ] {
+      set BUILD rhel6_gnu4.7.1
+    } elseif [ is-loaded pgi/13.4 ] {
+      set BUILD rhel6_pgi13.4
+    } elseif [ is-loaded pgi/12.8 ] {
+      set BUILD rhel6_pgi12.8
+    } elseif [ is-loaded pgi ] {
+      set BUILD rhel6_pgi13.4
+    } elseif [ is-loaded intel ] {
+      set BUILD rhel6_intel11.1.072
+    }
+
+    if {![info exists BUILD] && [lsearch -nocase {remove switch switch1 switch2 switch3} [module-info mode]] == -1 } {
+      puts stderr "[module-info name] is only available for the following environments:"
+      puts stderr "rhel6_gnu4.7.1"
+      puts stderr "rhel6_intel11.1.072"
+      puts stderr "rhel6_pgi12.8"
+      puts stderr "rhel6_pgi13.4"
+      break
+    }
+
+    if {[info exists BUILD]} {
+      set PREFIX <%= @package.version_directory %>/$BUILD
+
+      setenv OMPI_DIR $PREFIX
+
+      prepend-path PATH            $PREFIX/bin
+      prepend-path LD_LIBRARY_PATH $PREFIX/lib
+      prepend-path MANPATH         $PREFIX/share/man
+      prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
+    }
+    EOF
   end
 end
 
