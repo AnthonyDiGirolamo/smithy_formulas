@@ -4,8 +4,8 @@ class SzipFormula < Formula
   md5      "9229ef21fe4471281f0b632eb70376b1"
 
   module_commands do
-		pe = "PE-"
-		pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
 
     m = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
@@ -52,31 +52,33 @@ class SzipFormula < Formula
     system "make install"
   end
 
-  modulefile <<-MODULEFILE.strip_heredoc
-    #%Module
-    proc ModulesHelp { } {
-       puts stderr "<%= @package.name %> <%= @package.version %>"
-       puts stderr ""
-    }
-    # One line description
-    module-whatis "<%= @package.name %> <%= @package.version %>"
+  modulefile do
+    <<-MODULEFILE.strip_heredoc
+      #%Module
+      proc ModulesHelp { } {
+         puts stderr "<%= @package.name %> <%= @package.version %>"
+         puts stderr ""
+      }
+      # One line description
+      module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    <% if @builds.size > 1 %>
-    <%= module_build_list @package, @builds %>
+      <% if @builds.size > 1 %>
+      <%= module_build_list @package, @builds, :prgenv_prefix => #{module_is_available?("PrgEnv-gnu") ? '"PrgEnv-"' : '"PE-"'} %>
 
-    set PREFIX <%= @package.version_directory %>/$BUILD
-    <% else %>
-    set PREFIX <%= @package.prefix %>
-    <% end %>
+      set PREFIX <%= @package.version_directory %>/$BUILD
+      <% else %>
+      set PREFIX <%= @package.prefix %>
+      <% end %>
 
-    set    SZIP_INCLUDE_PATH "-I$PREFIX/include"
-    set    SZIP_LD_OPTS      "-L$PREFIX/lib -lsz"
-    setenv SZIP_LIB          "$SZIP_INCLUDE_PATH $SZIP_LD_OPTS"
-    setenv SZIP_DIR          "${PREFIX}"
+      set    SZIP_INCLUDE_PATH "-I$PREFIX/include"
+      set    SZIP_LD_OPTS      "-L$PREFIX/lib -lsz"
+      setenv SZIP_LIB          "$SZIP_INCLUDE_PATH $SZIP_LD_OPTS"
+      setenv SZIP_DIR          "${PREFIX}"
 
-    # Use Cray magic to link against automagically
-    prepend-path PE_PRODUCT_LIST     "SZIP"
-    setenv       SZIP_INCLUDE_OPTS   "-I$PREFIX/include"
-    setenv       SZIP_POST_LINK_OPTS "-L$PREFIX/lib -lsz"
-  MODULEFILE
+      # Use Cray magic to link against automagically
+      prepend-path PE_PRODUCT_LIST     "SZIP"
+      setenv       SZIP_INCLUDE_OPTS   "-I$PREFIX/include"
+      setenv       SZIP_POST_LINK_OPTS "-L$PREFIX/lib -lsz"
+    MODULEFILE
+  end
 end
