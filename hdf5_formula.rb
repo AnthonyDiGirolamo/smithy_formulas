@@ -60,11 +60,28 @@ class Hdf5Formula < Formula
       ENV["F9X"] = "ftn --target=native"
     end
 
-    system "./configure --prefix=#{prefix}",
+    args = [
+      "./configure --prefix=#{prefix}",
       "--with-zlib=/usr",
       "--with-szlib=$SZIP_DIR",
       "--enable-fortran",
       "--enable-cxx" #, "--enable-shared"#, "--enable-static"
+    ]
+
+    if name.include? "parallel"
+      args << "--enable-parallel"
+      args.delete("--enable-cxx")
+
+      ENV["CC"]  = "mpicc"
+      ENV["CXX"] = "mpiCC"
+      ENV["F77"] = "mpif77"
+      ENV["FC"]  = "mpif90"
+      ENV["F9X"] = "mpif90"
+
+      system "which mpicc"
+    end
+
+    system args
     system "make"
     system "make install"
   end
