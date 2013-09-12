@@ -7,17 +7,22 @@ class SzipFormula < Formula
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
 
-    m = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
     when /gnu/
-      m << "load #{pe}gnu"
+      commands << "load #{pe}gnu"
+      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
     when /pgi/
-      m << "load #{pe}pgi"
+      commands << "load #{pe}pgi"
+      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      m << "load #{pe}intel"
+      commands << "load #{pe}intel"
+      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
     when /cray/
-      m << "load #{pe}cray"
+      commands << "load #{pe}cray"
+      commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
+    commands
   end
 
   def install
