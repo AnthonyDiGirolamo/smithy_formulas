@@ -4,7 +4,7 @@ class ValgrindFormula < Formula
   md5 "288758010b271119a0ffc0183f1d6e38"
 
   module_commands [
-    "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel PrgEnv-cray"  
+    "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel PrgEnv-cray"
   ]
 
   def install

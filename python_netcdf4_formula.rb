@@ -8,12 +8,12 @@ class PythonNetcdf4Formula < Formula
     case build_name
     when /python3.3/
       packages << "python/3.3.0"
-      packages << "python_numpy/*/*python3.3.0*" 
+      packages << "python_numpy/*/*python3.3.0*"
     when /python2.7/
       packages << "python/2.7.3"
-      packages << "python_numpy/*/*python2.7.3*" 
+      packages << "python_numpy/*/*python2.7.3*"
     when /python2.6/
-      packages << "python_numpy/*/*python2.6.8*" 
+      packages << "python_numpy/*/*python2.6.8*"
       packages << "python_ordereddict/*/*python2.6.8*"
     end
 

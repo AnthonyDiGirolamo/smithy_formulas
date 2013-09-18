@@ -41,12 +41,12 @@ class UvcdatFormula < Formula
       --- a/CMake/cdat_modules/cairo_external.cmake
       +++ b/CMake/cdat_modules/cairo_external.cmake
       @@ -1,7 +1,7 @@
-       
+
        set(Cairo_source "${CMAKE_CURRENT_BINARY_DIR}/build/Cairo")
        set(Cairo_install "${cdat_EXTERNALS}")
       -set(Cairo_conf_args --disable-static)
       +set(Cairo_conf_args --enable-gobject=no --disable-static)
-       
+
        ExternalProject_Add(Cairo
          DOWNLOAD_DIR ${CDAT_PACKAGE_CACHE_DIR}
       diff --git a/CMake/cdat_modules/cdat_external.cmake b/CMake/cdat_modules/cdat_external.cmake
@@ -56,10 +56,10 @@ class UvcdatFormula < Formula
       @@ -15,7 +15,7 @@ if(APPLE)
          set(qt_flags "--enable-qt-framework")
        endif()
-       
+
       -set(qt_flags "${qt_flags} --with-qt=${QT_ROOT} --with-qt-lib=${QT_LIB_DIR} --with-qt-inc=${QT_INC_DIR}" --with-qt-bin=${QT_BINARY_DIR})
       +set(qt_flags "${qt_flags} --with-qt=#{qt.prefix} --with-qt-lib=#{qt.prefix}/lib --with-qt-inc=#{qt.prefix}/include" --with-qt-bin=#{qt.prefix}/bin)
-       
+
        if (CDAT_BUILD_WITH_LIBDRS)
         set(qt_flags "${qt_flags} -c pcmdi.py")
     EOF
