@@ -7,7 +7,9 @@ class MercurialFormula < Formula
     case build_name
     when /python3.3/ then
       packages << "python/3.3.0"
-    when /python2.7/
+    when /python2.7.5/
+      packages << "python/2.7.5"
+    when /python2.7.3/
       packages << "python/2.7.3"
     when /python2.6/
     end
@@ -20,7 +22,9 @@ class MercurialFormula < Formula
     case build_name
     when /python3.3/
       m << "load python/3.3.0"
-    when /python2.7/
+    when /python2.7.5/
+      m << "load python/2.7.5"
+    when /python2.7.3/
       m << "load python/2.7.3"
     end
     m
@@ -58,7 +62,7 @@ class MercurialFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    if { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
+    if { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] } {
       set BUILD python2.7.3
       set LIBDIR python2.7
     } else {
