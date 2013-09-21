@@ -12,7 +12,7 @@ class AutomakeFormula < Formula
   end
 
   modulefile <<-modulefile.strip_heredoc
-    #%module
+    #%Module
     proc moduleshelp { } {
        puts stderr "<%= @package.name %> <%= @package.version %>"
        puts stderr ""
@@ -23,11 +23,11 @@ class AutomakeFormula < Formula
     module load autoconf
     prereq autoconf
 
-    set prefix <%= @package.prefix %>
+    set PREFIX <%= @package.prefix %>
 
-    prepend-path path            $prefix/bin
-    prepend-path ld_library_path $prefix/lib
-    prepend-path manpath         $prefix/share/man
-    prepend-path pkg_config_path $prefix/lib/pkgconfig
+    prepend-path PATH            $PREFIX/bin
+    prepend-path LD_LIBRARY_PATH $PREFIX/lib
+    prepend-path MANPATH         $PREFIX/share/man
+    prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
   modulefile
 end
