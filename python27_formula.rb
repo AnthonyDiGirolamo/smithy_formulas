@@ -1,6 +1,6 @@
 class Python27Formula < Formula
   homepage "www.python.org/"
-  url "http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tar.bz2"
+  url "http://www.python.org/ftp/python/2.7.5/Python-2.7.5.tar.bz2"
 
   depends_on "sqlite"
 
@@ -23,13 +23,7 @@ class Python27Formula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    <% if @builds.size > 1 %>
-    <%= module_build_list @package, @builds %>
-
-    set PREFIX <%= @package.version_directory %>/$BUILD
-    <% else %>
     set PREFIX <%= @package.prefix %>
-    <% end %>
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
