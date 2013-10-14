@@ -29,7 +29,7 @@ class BoostFormula < Formula
           import os ;
           local CRAY_MPICH2_DIR = [ os.environ CRAY_MPICH2_DIR ] ;
           using gcc
-            : 4.7.2.xk7
+            : 4.8.1
             : CC
             : <compileflags>-I#{bzip2.prefix}/include
               <compileflags>-I$(CRAY_MPICH2_DIR)/include
@@ -102,7 +102,7 @@ class BoostFormula < Formula
           import os ;
           local CRAY_MPICH2_DIR = [ os.environ CRAY_MPICH2_DIR ] ;
           using pgi
-            : 13.7.0.xk7
+            : 13.7.0
             : pgCC
             : <compileflags>-I#{bzip2.prefix}/include
               <compileflags>-I$(CRAY_MPICH2_DIR)/include
