@@ -1,7 +1,11 @@
 class SubversionFormula < Formula
   homepage "http://subversion.apache.org/"
+  # url "http://mirror.cogentco.com/pub/apache/subversion/subversion-1.7.8.tar.bz2"
+  # sha1 "12c7d8d5414bba74c9777c4d1dae74f152df63c2"
   url "http://mirror.cogentco.com/pub/apache/subversion/subversion-1.8.3.tar.bz2"
   sha1 "e328e9f1c57f7c78bea4c3af869ec5d4503580cf"
+
+  module_commands ["purge"]
 
   depends_on ["neon", "apr", "apr-util", "sqlite"]
 
