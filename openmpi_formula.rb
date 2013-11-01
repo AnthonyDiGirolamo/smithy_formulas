@@ -57,12 +57,18 @@ class OpenmpiFormula < Formula
 
     if [ is-loaded gcc ] {
       set BUILD rhel6_gnu4.7.1
+    } elseif [ is-loaded pgi/13.9 ] {
+      set BUILD rhel6_pgi13.9
     } elseif [ is-loaded pgi/13.4 ] {
       set BUILD rhel6_pgi13.4
     } elseif [ is-loaded pgi/12.8 ] {
       set BUILD rhel6_pgi12.8
     } elseif [ is-loaded pgi ] {
       set BUILD rhel6_pgi13.4
+    } elseif [ is-loaded intel/13.1.3 ] {
+      set BUILD rhel6_intel13.1.3
+    } elseif [ is-loaded intel/11.1.072 ] {
+      set BUILD rhel6_intel11.1.072
     } elseif [ is-loaded intel ] {
       set BUILD rhel6_intel11.1.072
     }
@@ -71,8 +77,10 @@ class OpenmpiFormula < Formula
       puts stderr "[module-info name] is only available for the following environments:"
       puts stderr "rhel6_gnu4.7.1"
       puts stderr "rhel6_intel11.1.072"
+      puts stderr "rhel6_intel13.1.3"
       puts stderr "rhel6_pgi12.8"
       puts stderr "rhel6_pgi13.4"
+      puts stderr "rhel6_pgi13.9"
       break
     }
 
