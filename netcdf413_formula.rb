@@ -75,7 +75,8 @@ class Netcdf413Formula < Formula
     system "make install"
   end
 
-  modulefile <<-MODULEFILE.strip_heredoc
+  modulefile do
+    <<-MODULEFILE.strip_heredoc
     #%Module
 
     proc ModulesHelp { } {
@@ -95,7 +96,7 @@ class Netcdf413Formula < Formula
     prereq hdf5/1.8.11
 
     <% if @builds.size > 1 %>
-    <%= module_build_list @package, @builds %>
+    <%= module_build_list @package, @builds, :prgenv_prefix => #{module_is_available?("PrgEnv-gnu") ? '"PrgEnv-"' : '"PE-"'} %>
 
     set PREFIX <%= @package.version_directory %>/$BUILD
     <% else %>
@@ -109,12 +110,11 @@ class Netcdf413Formula < Formula
     set NETCDF_F_INCLUDE_PATH   "$MOD_INCLUDE -I$PREFIX/include"
     set NETCDF_C_INCLUDE_PATH   "-I$PREFIX/include"
     set NETCDF_CPP_INCLUDE_PATH "-I$PREFIX/include"
-    set NETCDF_LD_OPTS          "-L$PREFIX/lib -lnetcdf "
 
-    set NETCDF_LD_OPTS     "-L$PREFIX/lib -lnetcdff -lnetcdf_c++ -lnetcdf -L\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
-    set NETCDF_C_LD_OPTS   "-L$PREFIX/lib -lnetcdf -L\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
-    set NETCDF_CPP_LD_OPTS "-L$PREFIX/lib -lnetcdf_c++ -lnetcdf -L\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
-    set NETCDF_F_LD_OPTS   "-L$PREFIX/lib -lnetcdff -lnetcdf -L\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
+    set NETCDF_LD_OPTS     "-L$PREFIX/lib -lnetcdff -lnetcdf_c++ -lnetcdf -L\\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
+    set NETCDF_C_LD_OPTS   "-L$PREFIX/lib -lnetcdf -L\\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
+    set NETCDF_CPP_LD_OPTS "-L$PREFIX/lib -lnetcdf_c++ -lnetcdf -L\\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
+    set NETCDF_F_LD_OPTS   "-L$PREFIX/lib -lnetcdff -lnetcdf -L\\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
 
     setenv NETCDF_CLIB   "$NETCDF_C_INCLUDE_PATH $NETCDF_C_LD_OPTS"
     setenv NETCDF_CPPLIB "$NETCDF_C_INCLUDE_PATH $NETCDF_CPP_LD_OPTS"
@@ -127,5 +127,6 @@ class Netcdf413Formula < Formula
     prepend-path LIBRARY_PATH     $PREFIX/lib
     prepend-path INCLUDE_PATH     $PREFIX/include
     prepend-path MANPATH          $PREFIX/share/man
-  MODULEFILE
+    MODULEFILE
+  end
 end
