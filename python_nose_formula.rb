@@ -8,8 +8,6 @@ class PythonNoseFormula < Formula
       [ "python/3.3.2" ]
     when /python2.7/
       [ "python/2.7.5" ]
-    when /python2.6/
-      [ ]
     end
   end
 
@@ -50,8 +48,6 @@ class PythonNoseFormula < Formula
       libdirs << "#{prefix}/lib/python3.3/site-packages"
     when /python2.7/
       libdirs << "#{prefix}/lib/python2.7/site-packages"
-    when /python2.6/
-      libdirs << "#{prefix}/lib64/python2.6/site-packages"
     end
     FileUtils.mkdir_p libdirs.first
 
@@ -75,9 +71,6 @@ class PythonNoseFormula < Formula
     } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
       set BUILD python2.7
       set LIBDIR python2.7
-    } else {
-      set BUILD python2.6
-      set LIBDIR python2.6
     }
     set PREFIX <%= @package.version_directory %>/$BUILD
 

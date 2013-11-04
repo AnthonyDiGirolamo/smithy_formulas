@@ -1,15 +1,24 @@
-class IpythonFormula < Formula
-  homepage "http://ipython.org/"
-  url "https://github.com/ipython/ipython/releases/download/rel-1.1.0/ipython-1.1.0.tar.gz"
+class PythonSetuptoolsFormula < Formula
+  homepage "https://pypi.python.org/"
+  url "https://pypi.python.org/packages/source/s/setuptools/setuptools-1.3.tar.gz"
 
-  depends_on "python"
+  depends_on do
+    case build_name
+    when /python3.3/
+      [ "python/3.3.2" ]
+    when /python2.7/
+      [ "python/2.7.5" ]
+    when /python2.6/
+      [ ]
+    end
+  end
 
   modules do
     case build_name
     when /python3.3/
-      [ "python/3.3.2", "python_setuptools" ]
+      [ "python/3.3.2" ]
     when /python2.7/
-      [ "python/2.7.5", "python_setuptools" ]
+      [ "python/2.7.5" ]
     end
   end
 
@@ -38,6 +47,8 @@ class IpythonFormula < Formula
     }
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
+
+    prereq python
 
     if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
       set BUILD python3.3
