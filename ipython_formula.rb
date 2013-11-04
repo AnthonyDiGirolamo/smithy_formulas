@@ -39,6 +39,10 @@ class IpythonFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
+    prereq python
+    module load python_setuptools
+    prereq python_setuptools
+
     if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
       set BUILD python3.3
       set LIBDIR python3.3
