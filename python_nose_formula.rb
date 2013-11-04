@@ -5,21 +5,20 @@ class PythonNoseFormula < Formula
   depends_on do
     case build_name
     when /python3.3/
-      [ "python/3.3.0" ]
+      [ "python/3.3.2" ]
     when /python2.7/
-      [ "python/2.7.3" ]
+      [ "python/2.7.5" ]
     when /python2.6/
       [ ]
     end
   end
 
-
   modules do
     case build_name
     when /python3.3/
-      [ "python/3.3.0" ]
+      [ "python/3.3.2" ]
     when /python2.7/
-      [ "python/2.7.3" ]
+      [ "python/2.7.5" ]
     end
   end
 
@@ -68,14 +67,16 @@ class PythonNoseFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    if [ is-loaded python/3.3.0 ] {
-      set BUILD python3.3.0
+    prereq python
+
+    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
+      set BUILD python3.3
       set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7.3
+    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
+      set BUILD python2.7
       set LIBDIR python2.7
     } else {
-      set BUILD python2.6.8
+      set BUILD python2.6
       set LIBDIR python2.6
     }
     set PREFIX <%= @package.version_directory %>/$BUILD

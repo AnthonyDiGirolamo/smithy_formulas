@@ -1,47 +1,54 @@
 class PythonNumpyFormula < Formula
   homepage "http://www.numpy.org/"
-  url "http://downloads.sourceforge.net/project/numpy/NumPy/1.7.1/numpy-1.7.1.tar.gz"
+  url "http://downloads.sourceforge.net/project/numpy/NumPy/1.8.0/numpy-1.8.0.tar.gz"
 
   depends_on do
     packages = [ "cblas/20110120/*acml*" ]
     case build_name
     when /python3.3/
-      packages << "python/3.3.0"
+      packages << "python/3.3.2"
     when /python2.7/
-      packages << "python/2.7.3"
-    when /python2.6/
+      packages << "python/2.7.5"
     end
     packages
   end
 
   module_commands do
-    m = [ "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-cray PrgEnv-intel" ]
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
     when /gnu/
-      m << "load PrgEnv-gnu"
+      commands << "load #{pe}gnu"
+      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
     when /pgi/
-      m << "load PrgEnv-pgi"
+      commands << "load #{pe}pgi"
+      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      m << "load PrgEnv-intel"
+      commands << "load #{pe}intel"
+      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
     when /cray/
-      m << "load PrgEnv-cray"
+      commands << "load #{pe}cray"
+      commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
-    m << "load acml"
-    m << "unload python"
+
+    commands << "load acml"
+    commands << "unload python"
 
     case build_name
     when /python3.3/
-      m << "load python/3.3.0"
+      commands << "load python/3.3.2"
     when /python2.7/
-      m << "load python/2.7.3"
+      commands << "load python/2.7.5"
     end
-    m
+    commands
   end
 
   def install
     module_list
 
-    acml_prefix = `#{@modulecmd} display acml 2>&1|grep ACML_DIR`.split[2]
+    acml_prefix = module_environment_variable("acml/5.3.0", "ACML_DIR")
     acml_prefix += "/gfortran64"
 
     FileUtils.mkdir_p "#{prefix}/lib"
@@ -87,8 +94,6 @@ class PythonNumpyFormula < Formula
       libdirs << "#{prefix}/lib/python3.3/site-packages"
     when /python2.7/
       libdirs << "#{prefix}/lib/python2.7/site-packages"
-    when /python2.6/
-      libdirs << "#{prefix}/lib64/python2.6/site-packages"
     end
     FileUtils.mkdir_p libdirs.first
 
@@ -107,15 +112,14 @@ class PythonNumpyFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    if [ is-loaded python/3.3.0 ] {
-      set BUILD sles11.1_python3.3.0_gnu4.7.2_acml5.2.0
+    prereq python
+
+    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
+      set BUILD python3.3_acml5.3.0_gnu4.7.1
       set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD sles11.1_python2.7.3_gnu4.7.2_acml5.2.0
+    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
+      set BUILD python2.7_acml5.3.0_gnu4.7.1
       set LIBDIR python2.7
-    } else {
-      set BUILD sles11.1_python2.6.8_gnu4.7.2_acml5.2.0
-      set LIBDIR python2.6
     }
     set PREFIX <%= @package.version_directory %>/$BUILD
 
@@ -123,6 +127,8 @@ class PythonNumpyFormula < Formula
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/lib64
     prepend-path LD_LIBRARY_PATH /opt/gcc/4.7.2/snos/lib64
+    prepend-path LD_LIBRARY_PATH /ccs/compilers/gcc/rhel6-x86_64/4.7.1/lib
+    prepend-path LD_LIBRARY_PATH /ccs/compilers/gcc/rhel6-x86_64/4.7.1/lib64
     prepend-path MANPATH         $PREFIX/share/man
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages

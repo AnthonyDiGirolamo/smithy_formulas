@@ -2,25 +2,38 @@ class CblasAcmlFormula < Formula
   homepage "http://www.netlib.org/blas/"
   url      "http://www.netlib.org/blas/blast-forum/cblas.tgz"
 
+  version "20110120"
+
   module_commands do
-    m = [ "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-cray PrgEnv-intel" ]
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
     when /gnu/
-      m << "load PrgEnv-gnu"
+      commands << "load #{pe}gnu"
+      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
     when /pgi/
-      m << "load PrgEnv-pgi"
+      commands << "load #{pe}pgi"
+      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      m << "load PrgEnv-intel"
+      commands << "load #{pe}intel"
+      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
     when /cray/
-      m << "load PrgEnv-cray"
+      commands << "load #{pe}cray"
+      commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
-    m << "load acml"
+
+    commands << "load acml"
+    commands
   end
 
   def install
+    module_list
+
     FileUtils.rm_f "Makefile.in"
 
-    acml_prefix = `#{@modulecmd} display acml 2>&1|grep ACML_DIR`.split[2]
+    acml_prefix = module_environment_variable("acml/5.3.0", "ACML_DIR")
 
     patch <<-EOF.strip_heredoc
       diff --git a/Makefile.in b/Makefile.in
