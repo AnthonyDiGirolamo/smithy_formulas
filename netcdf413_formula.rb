@@ -2,39 +2,30 @@ class Netcdf413Formula < Formula
   homepage "http://www.unidata.ucar.edu/software/netcdf/"
   url "http://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-4.1.3.tar.gz"
 
-  depends_on do
-    case build_name
-    when /gnu/
-      compiler = "gnu"
-    when /pgi/
-      compiler = "pgi12"
-    when /intel/
-      compiler = "intel"
-    when /cray/
-      compiler = "cray"
-    end
-    [ "hdf5/1.8.11/*#{compiler}*", "szip/*/*#{compiler}*" ]
-  end
-
   module_commands do
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
 
-    m = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
     when /gnu/
-      m << "load #{pe}gnu"
+      commands << "load #{pe}gnu"
+      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
     when /pgi/
-      m << "load #{pe}pgi"
+      commands << "load #{pe}pgi"
+      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      m << "load #{pe}intel"
+      commands << "load #{pe}intel"
+      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
     when /cray/
-      m << "load #{pe}cray"
+      commands << "load #{pe}cray"
+      commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
-    m << "load szip"
-    m << "load /sw/xk6/modulefiles/hdf5/1.8.11"
-    m << "swap xtpe-interlagos xtpe-istanbul"
-    m
+
+    commands << "load szip"
+    commands << "load hdf5/1.8.11"
+    commands << "swap xtpe-interlagos xtpe-istanbul" if pe == "PrgEnv-"
+    commands
   end
 
   def install
@@ -67,8 +58,11 @@ class Netcdf413Formula < Formula
     #   ENV["F9X"] = "ftn --target=native"
     end
 
-    ENV["CPPFLAGS"] = "-I#{hdf5.prefix}/include -I#{szip.prefix}/include"
-    ENV["LDFLAGS"]  = "-L#{hdf5.prefix}/lib     -L#{szip.prefix}/lib -lhdf5 -lhdf5_hl -lsz -lz -lm"
+    hdf5_prefix = module_environment_variable("hdf5/1.8.11", "HDF5_DIR")
+    szip_prefix = module_environment_variable("szip/2.1", "SZIP_DIR")
+
+    ENV["CPPFLAGS"] = "-I#{hdf5_prefix}/include -I#{szip_prefix}/include"
+    ENV["LDFLAGS"]  = "-L#{hdf5_prefix}/lib     -L#{szip_prefix}/lib -lhdf5 -lhdf5_hl -lsz -lz -lm"
 
     system "echo $CPPFLAGS"
     system "echo $LDFLAGS"
@@ -85,28 +79,20 @@ class Netcdf413Formula < Formula
     #%Module
 
     proc ModulesHelp { } {
-       puts stderr "Sets up environment to use netcdf 4.1.3"
-       puts stderr "Usage:   ftn test.f90 \${NETCDF_FLIB}"
-       puts stderr "    or   cc test.c \${NETCDF_CLIB}"
-       puts stderr "To see the compilation options, try: "
-       puts stderr "% nc-config --all"
-       puts stderr "
-        Note modules szip/2.1 and hdf5/1.8.7 are required
-
-        Available PE: pgi/11.8.0 and pgi/11.9.0
-            Not available yet for intel, gnu and pathscale.
-
-        Loading the module:
-
-            % module swap pgi \[pgi/11.8.0 | pgi/11.9.0\]
-            % module load szip/2.1
-            % module load hdf/1.8.7
-            % module load netcdf/4.1.3"
+       puts stderr "Sets up environment to use netcdf 4.1.1"
+       puts stderr "Usage:   fortrancompiler test.f90 \${NETCDF_FLIB}"
+       puts stderr "    or   ccompiler test.c \${NETCDF_CLIB}"
     }
     module-whatis "Sets up environment to use netcdf 4.1.3"
 
+    module unload hdf5
+    module unload szip
+
+    module load szip/2.1
     prereq szip/2.1
-    prereq hdf5/1.8.7
+
+    module load hdf5/1.8.11
+    prereq hdf5/1.8.11
 
     <% if @builds.size > 1 %>
     <%= module_build_list @package, @builds %>
@@ -120,14 +106,21 @@ class Netcdf413Formula < Formula
 
     prepend-path PATH $PREFIX/bin
 
-    set NETCDF_F_INCLUDE_PATH "$MOD_INCLUDE -I$PREFIX/include"
-    set NETCDF_C_INCLUDE_PATH "-I$PREFIX/include"
-    set NETCDF_LD_OPTS "-L$PREFIX/lib -lnetcdf "
-    setenv NETCDF_CLIB "$NETCDF_C_INCLUDE_PATH $NETCDF_LD_OPTS"
-    setenv NETCDF_FLIB "$NETCDF_F_INCLUDE_PATH $NETCDF_LD_OPTS"
-    setenv NETCDF_DIR "${PREFIX}"
+    set NETCDF_F_INCLUDE_PATH   "$MOD_INCLUDE -I$PREFIX/include"
+    set NETCDF_C_INCLUDE_PATH   "-I$PREFIX/include"
+    set NETCDF_CPP_INCLUDE_PATH "-I$PREFIX/include"
+    set NETCDF_LD_OPTS          "-L$PREFIX/lib -lnetcdf "
 
-    set sys [ uname machine ]
+    set NETCDF_LD_OPTS     "-L$PREFIX/lib -lnetcdff -lnetcdf_c++ -lnetcdf -L\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
+    set NETCDF_C_LD_OPTS   "-L$PREFIX/lib -lnetcdf -L\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
+    set NETCDF_CPP_LD_OPTS "-L$PREFIX/lib -lnetcdf_c++ -lnetcdf -L\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
+    set NETCDF_F_LD_OPTS   "-L$PREFIX/lib -lnetcdff -lnetcdf -L\$HDF5_DIR/lib -lhdf5_hl -lhdf5 -L\$SZIP_DIR/lib -lsz -lz -lm -lcurl"
+
+    setenv NETCDF_CLIB   "$NETCDF_C_INCLUDE_PATH $NETCDF_C_LD_OPTS"
+    setenv NETCDF_CPPLIB "$NETCDF_C_INCLUDE_PATH $NETCDF_CPP_LD_OPTS"
+    setenv NETCDF_FLIB   "$NETCDF_F_INCLUDE_PATH $NETCDF_F_LD_OPTS"
+
+    setenv NETCDF_DIR "${PREFIX}"
 
     prepend-path PATH             $PREFIX/bin
     prepend-path LD_LIBRARY_PATH  $PREFIX/lib

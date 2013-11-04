@@ -80,6 +80,8 @@ class SzipFormula < Formula
       setenv SZIP_LIB          "$SZIP_INCLUDE_PATH $SZIP_LD_OPTS"
       setenv SZIP_DIR          "${PREFIX}"
 
+      prepend-path LD_LIBRARY_PATH $PREFIX/lib
+
       # Use Cray magic to link against automagically
       prepend-path PE_PRODUCT_LIST     "SZIP"
       setenv       SZIP_INCLUDE_OPTS   "-I$PREFIX/include"
