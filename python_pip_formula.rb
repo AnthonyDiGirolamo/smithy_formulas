@@ -1,24 +1,23 @@
 class PythonPipFormula < Formula
   homepage "https://pypi.python.org/pypi/pip"
-  url "https://pypi.python.org/packages/source/p/pip/pip-1.3.1.tar.gz"
+  url "https://pypi.python.org/packages/source/p/pip/pip-1.4.1.tar.gz"
+  md5 "6afbb46aeb48abac658d4df742bff714"
 
   depends_on do
     case build_name
     when /python3.3/
-      [ "python/3.3.0", "python_distribute/0.6.45/sles11.1_gnu4.3.4_python3.3.0" ]
+      [ "python/3.3.2", "python_setuptools/*/*python3.3*" ]
     when /python2.7/
-      [ "python/2.7.3", "python_distribute/0.6.45/sles11.1_gnu4.3.4_python2.7.3" ]
-    when /python2.6/
-      [ "python_distribute/0.6.45/sles11.1_gnu4.3.4_python2.6.8" ]
+      [ "python/2.7.5", "python_setuptools/*/*python2.7*" ]
     end
   end
 
   modules do
     case build_name
     when /python3.3/
-      [ "python/3.3.0" ]
+      [ "python/3.3.2", "python_setuptools" ]
     when /python2.7/
-      [ "python/2.7.3" ]
+      [ "python/2.7.5", "python_setuptools" ]
     end
   end
 
@@ -31,13 +30,10 @@ class PythonPipFormula < Formula
     when /python3.3/
       python_binary = "python3.3"
       libdirs << "#{prefix}/lib/python3.3/site-packages"
-      libdirs << "#{python_distribute.prefix}/lib/python3.3/site-packages"
+      libdirs << "#{python_setuptools.prefix}/lib/python3.3/site-packages"
     when /python2.7/
       libdirs << "#{prefix}/lib/python2.7/site-packages"
-      libdirs << "#{python_distribute.prefix}/lib/python2.7/site-packages"
-    when /python2.6/
-      libdirs << "#{prefix}/lib64/python2.6/site-packages"
-      libdirs << "#{python_distribute.prefix}/lib64/python2.6/site-packages"
+      libdirs << "#{python_setuptools.prefix}/lib/python2.7/site-packages"
     end
     FileUtils.mkdir_p libdirs.first
 
@@ -53,15 +49,16 @@ class PythonPipFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    if [ is-loaded python/3.3.0 ] {
-      set BUILD python3.3.0
+    prereq python
+    module load python_setuptools
+    prereq python_setuptools
+
+    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
+      set BUILD python3.3
       set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7.3
+    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
+      set BUILD python2.7
       set LIBDIR python2.7
-    } else {
-      set BUILD python2.6.8
-      set LIBDIR python2.6
     }
     set PREFIX <%= @package.version_directory %>/$BUILD
 
