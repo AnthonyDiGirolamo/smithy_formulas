@@ -5,22 +5,18 @@ class PythonPygtkFormula < Formula
   depends_on do
     case build_name
     when /python3.3/
-      [ "python/3.3.0", "python_pygobject" ]
+      [ "python/3.3.2", "python_pygobject" ]
     when /python2.7/
-      [ "python/2.7.3", "python_pygobject", "python_pycairo" ]
-    when /python2.6/
-      [ "python_pygobject", "python_pycairo" ]
+      [ "python/2.7.5", "python_pygobject", "python_pycairo" ]
     end
   end
 
   modules do
     case build_name
     when /python3.3/
-      [ "python/3.3.0", "python_pygobject" ]
+      [ "python/3.3.2", "python_pygobject" ]
     when /python2.7/
-      [ "python/2.7.3", "python_pygobject", "python_pycairo" ]
-    when /python2.6/
-      [ "python_pygobject", "python_pycairo" ]
+      [ "python/2.7.5", "python_pygobject", "python_pycairo" ]
     end
   end
 
@@ -38,9 +34,6 @@ class PythonPygtkFormula < Formula
     when /python2.7/
       libdirs << "#{prefix}/lib/python2.7/site-packages"
       libdirs << "#{python_pygobject.prefix}/lib/python2.7/site-packages"
-    when /python2.6/
-      libdirs << "#{prefix}/lib64/python2.6/site-packages"
-      libdirs << "#{python_pygobject.prefix}/lib64/python2.6/site-packages"
     end
     FileUtils.mkdir_p libdirs.first
 
@@ -56,15 +49,14 @@ class PythonPygtkFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    if [ is-loaded python/3.3.0 ] {
-      set BUILD python3.3.0
+    prereq python
+
+    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
+      set BUILD python3.3
       set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7.3
+    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
+      set BUILD python2.7
       set LIBDIR python2.7
-    } else {
-      set BUILD python2.6.8
-      set LIBDIR python2.6
     }
     set PREFIX <%= @package.version_directory %>/$BUILD
 
