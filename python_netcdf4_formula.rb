@@ -4,17 +4,12 @@ class PythonNetcdf4Formula < Formula
   sha1 "c409355f491e43d7ff8a49775d0a248a0186205d"
 
   depends_on do
-    packages = [ ]
     case build_name
     when /python3.3/
-      packages << "python/3.3.2"
-      packages << "python_numpy/*/*python3.3*"
+      ["python/3.3.2", "python_numpy/*/*python3.3*"]
     when /python2.7/
-      packages << "python/2.7.5"
-      packages << "python_numpy/*/*python2.7*"
+      ["python/2.7.5", "python_numpy/*/*python2.7*"]
     end
-
-    packages
   end
 
   module_commands do

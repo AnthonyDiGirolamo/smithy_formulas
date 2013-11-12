@@ -107,6 +107,7 @@ class Hdf5Formula < Formula
       # One line description
       module-whatis "<%= @package.name %> <%= @package.version %>"
 
+      module load szip/2.1
       prereq szip/2.1
       set szipdir $::env(SZIP_DIR)
 

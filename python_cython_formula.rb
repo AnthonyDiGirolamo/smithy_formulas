@@ -1,42 +1,29 @@
 class PythonCythonFormula < Formula
   homepage "http://cython.org/"
-  url "http://cython.org/release/Cython-0.19.1.tar.gz"
-  sha1 "f8c8baa2c358a7482de71d0c744bf19caaae6621"
+  url "http://cython.org/release/Cython-0.19.2.tar.gz"
+  md5 "4af1218346510b464c0a6bf15500d0e2"
 
   depends_on do
     packages = [ ]
     case build_name
     when /python3.3/
-      packages << "python/3.3.0"
+      packages << "python/3.3.2"
     when /python2.7/
-      packages << "python/2.7.3"
-    when /python2.6/
+      packages << "python/2.7.5"
     end
     packages
   end
 
   module_commands do
-    m = [ "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-cray PrgEnv-intel" ]
-    # case build_name
-    # when /gnu/
-    #   m << "load PrgEnv-gnu"
-    # when /pgi/
-    #   m << "load PrgEnv-pgi"
-    # when /intel/
-    #   m << "load PrgEnv-intel"
-    # when /cray/
-    #   m << "load PrgEnv-cray"
-    # end
-
-    m << "unload python"
+    commands = ["purge"]
+    commands << "unload python"
     case build_name
     when /python3.3/
-      m << "load python/3.3.0"
+      commands << "load python/3.3.2"
     when /python2.7/
-      m << "load python/2.7.3"
+      commands << "load python/2.7.5"
     end
-
-    m
+    commands
   end
 
   def install
@@ -50,8 +37,6 @@ class PythonCythonFormula < Formula
       libdirs << "#{prefix}/lib/python3.3/site-packages"
     when /python2.7/
       libdirs << "#{prefix}/lib/python2.7/site-packages"
-    when /python2.6/
-      libdirs << "#{prefix}/lib64/python2.6/site-packages"
     end
     FileUtils.mkdir_p libdirs.first
 
@@ -70,15 +55,14 @@ class PythonCythonFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    if [ is-loaded python/3.3.0 ] {
-      set BUILD python3.3.0
+    prereq python
+
+    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
+      set BUILD python3.3
       set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7.3
+    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
+      set BUILD python2.7
       set LIBDIR python2.7
-    } else {
-      set BUILD python2.6.8
-      set LIBDIR python2.6
     }
     set PREFIX <%= @package.version_directory %>/$BUILD
 
