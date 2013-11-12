@@ -67,7 +67,7 @@ class Netcdf413Formula < Formula
     system "echo $CPPFLAGS"
     system "echo $LDFLAGS"
     system "./configure --prefix=#{prefix}",
-      "--disable-shared",
+      "--enable-shared",
       "--enable-static",
       "--enable-fortran",
       "--enable-cxx"

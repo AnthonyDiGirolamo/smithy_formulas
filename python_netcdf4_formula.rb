@@ -1,53 +1,48 @@
 class PythonNetcdf4Formula < Formula
   homepage "http://code.google.com/p/netcdf4-python/"
-  url "http://netcdf4-python.googlecode.com/files/netCDF4-1.0.5.tar.gz"
-  sha1 "acd98355cca11b7302f7a3f1181d07c504ad7916"
+  url "http://netcdf4-python.googlecode.com/files/netCDF4-1.0.6.tar.gz"
+  sha1 "c409355f491e43d7ff8a49775d0a248a0186205d"
 
   depends_on do
     packages = [ ]
     case build_name
     when /python3.3/
-      packages << "python/3.3.0"
-      packages << "python_numpy/*/*python3.3.0*"
+      packages << "python/3.3.2"
+      packages << "python_numpy/*/*python3.3*"
     when /python2.7/
-      packages << "python/2.7.3"
-      packages << "python_numpy/*/*python2.7.3*"
-    when /python2.6/
-      packages << "python_numpy/*/*python2.6.8*"
-      packages << "python_ordereddict/*/*python2.6.8*"
+      packages << "python/2.7.5"
+      packages << "python_numpy/*/*python2.7*"
     end
 
     packages
   end
 
   module_commands do
-    m = [ "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-cray PrgEnv-intel" ]
-    m << "load PrgEnv-gnu"
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
 
-    m << "unload python"
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+
+    commands << "load #{pe}gnu"
+    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+
+    commands << "unload python"
     case build_name
     when /python3.3/
-      m << "load python/3.3.0"
+      commands << "load python/3.3.2"
     when /python2.7/
-      m << "load python/2.7.3"
-    when /python2.6/
-      m << "load python_ordereddict"
+      commands << "load python/2.7.5"
     end
 
-    m << "load python_numpy"
+    commands << "load python_numpy"
 
-    if build_name =~ /netcdf([\d\.]+)/
-      m << "load netcdf/#{$1}"
-    else
-      m << "load netcdf/4.2.0"
-    end
+    commands << "load hdf5"
+    commands << "swap hdf5 hdf5/#{$1}" if build_name =~ /hdf5([\d\.]+)/
 
-    if build_name =~ /hdf5([\d\.]+)/
-      m << "load hdf5/#{$1}"
-    else
-      m << "load hdf5/1.8.8"
-    end
-    m
+    commands << "load netcdf"
+    commands << "swap netcdf netcdf/#{$1}" if build_name =~ /netcdf([\d\.]+)/
+
+    commands
   end
 
   def install
@@ -61,8 +56,6 @@ class PythonNetcdf4Formula < Formula
       libdirs << "#{prefix}/lib/python3.3/site-packages"
     when /python2.7/
       libdirs << "#{prefix}/lib/python2.7/site-packages"
-    when /python2.6/
-      libdirs << "#{prefix}/lib64/python2.6/site-packages"
     end
     FileUtils.mkdir_p libdirs.first
 
@@ -82,20 +75,16 @@ class PythonNetcdf4Formula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
+    prereq python
     module load python_numpy
     prereq python_numpy
 
-    if [ is-loaded python/3.3.0 ] {
-      set BUILD python3.3.0_netcdf4.2.0
+    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
+      set BUILD python3.3_netcdf4.1.3
       set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7.3_netcdf4.2.0
+    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
+      set BUILD python2.7_netcdf4.1.3
       set LIBDIR python2.7
-    } else {
-      module load python_ordereddict
-      prereq python_ordereddict
-      set BUILD python2.6.8_netcdf4.2.0
-      set LIBDIR python2.6
     }
     set PREFIX <%= @package.version_directory %>/$BUILD
 
