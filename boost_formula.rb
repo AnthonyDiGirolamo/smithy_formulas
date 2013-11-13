@@ -176,9 +176,13 @@ class BoostFormula < Formula
     setenv BOOST_DIR   $PREFIX
     set    BOOST_LIB   "-L$PREFIX/lib"
     set    BOOST_INC   "-I$PREFIX/include"
+    set    BOOST_LIBS  "-lboost_date_time -lboost_filesystem -lboost_graph -lboost_graph_parallel -lboost_iostreams -lboost_math_c99 -lboost_math_c99f -lboost_math_c99l -lboost_math_tr1 -lboost_math_tr1f -lboost_math_tr1l -lboost_mpi -lboost_prg_exec_monitor -lboost_program_options -lboost_python -lboost_regex -lboost_serialization -lboost_signals -lboost_system -lboost_test_exec_monitor -lboost_thread -lboost_unit_test_framework -lboost_wave -lboost_wserialization"
 
     setenv BOOST_LIB   $BOOST_LIB
     setenv BOOST_INC   $BOOST_INC
     setenv BOOST_FLAGS "$BOOST_INC $BOOST_LIB"
+    setenv BOOST_CLIB  "$BOOST_INC $BOOST_LIB $BOOST_LIBS"
+
+    prepend-path LD_LIBRARY_PATH $PREFIX/lib
   MODULEFILE
 end
