@@ -171,6 +171,8 @@ class BoostFormula < Formula
     set PREFIX <%= @package.prefix %>
     <% end %>
 
+    conflict boost
+
     setenv BOOST_DIR   $PREFIX
     set    BOOST_LIB   "-L$PREFIX/lib"
     set    BOOST_INC   "-I$PREFIX/include"
