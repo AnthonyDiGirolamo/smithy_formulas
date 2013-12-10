@@ -68,17 +68,31 @@ class Hdf5Formula < Formula
       "--enable-cxx" #, "--enable-shared"#, "--enable-static"
     ]
 
+    if build_name.include? "fortran2003"
+      args << "--enable-fortran2003"
+    end
+
     if name.include? "parallel"
       args << "--enable-parallel"
       args.delete("--enable-cxx")
 
-      ENV["CC"]  = "mpicc"
-      ENV["CXX"] = "mpiCC"
-      ENV["F77"] = "mpif77"
-      ENV["FC"]  = "mpif90"
-      ENV["F9X"] = "mpif90"
-
-      system "which mpicc"
+      if module_is_available?("PE-gnu")
+        ENV["CC"]  = "mpicc"
+        ENV["CXX"] = "mpiCC"
+        ENV["F77"] = "mpif77"
+        ENV["FC"]  = "mpif90"
+        ENV["F9X"] = "mpif90"
+        system "which mpicc"
+      else
+        ENV["CC"]  = "cc"
+        ENV["CXX"] = "CC"
+        ENV["F77"] = "ftn"
+        ENV["FC"]  = "ftn"
+        ENV["F9X"] = "ftn"
+        args << "--enable-static"
+        args << "--disable-shared"
+        args[0] = "XTPE_LINK_TYPE=dynamic LD_LIBRARY_PATH=/usr/lib/alps:$LD_LIBRARY_PATH ./configure --prefix=#{prefix}"
+      end
     end
 
     system args
