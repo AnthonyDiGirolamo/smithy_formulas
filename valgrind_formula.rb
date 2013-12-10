@@ -1,7 +1,7 @@
 class ValgrindFormula < Formula
   homepage "http://valgrind.org/"
-  url "http://valgrind.org/downloads/valgrind-3.8.1.tar.bz2"
-  md5 "288758010b271119a0ffc0183f1d6e38"
+  url "http://www.valgrind.org/downloads/valgrind-3.9.0.tar.bz2"
+  md5 "0947de8112f946b9ce64764af7be6df2"
 
   module_commands [
     "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel PrgEnv-cray"
@@ -43,5 +43,6 @@ class ValgrindFormula < Formula
     prepend-path INCLUDE_PATH    $PREFIX/include
     prepend-path MANPATH         $PREFIX/man
     prepend-path VALGRIND_LIB    $PREFIX/lib/valgrind
+    prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
   EOF
 end
