@@ -9,7 +9,7 @@ class PythonCythonFormula < Formula
     when /python3.3/
       packages << "python/3.3.2"
     when /python2.7/
-      packages << "python/2.7.5"
+      packages << "python/2.7.3"
     end
     packages
   end
@@ -21,7 +21,7 @@ class PythonCythonFormula < Formula
     when /python3.3/
       commands << "load python/3.3.2"
     when /python2.7/
-      commands << "load python/2.7.5"
+      commands << "load python/2.7.3"
     end
     commands
   end
@@ -60,7 +60,7 @@ class PythonCythonFormula < Formula
     if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
       set BUILD python3.3
       set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
+    } elseif { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
       set BUILD python2.7
       set LIBDIR python2.7
     }
