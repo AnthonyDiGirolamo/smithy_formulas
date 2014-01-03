@@ -31,6 +31,7 @@ class GslFormula < Formula
     set          GSL_LD_OPTS        "-L$PREFIX/lib -lgsl -lgslcblas"
     setenv       GSL_LIB            "$GSL_INCLUDE_PATH $GSL_LD_OPTS"
 
+    prepend-path PATH               $PREFIX/bin
     prepend-path PE_PRODUCT_LIST    "GSL"
     setenv       GSL_INCLUDE_OPTS   "-I$PREFIX/include"
     setenv       GSL_POST_LINK_OPTS "-L$PREFIX/lib -lgsl -lgslcblas"
