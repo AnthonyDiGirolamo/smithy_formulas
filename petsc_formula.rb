@@ -1,88 +1,201 @@
 class PetscFormula < Formula
   homepage "http://www.mcs.anl.gov/petsc/index.html"
-  url "http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.4.2.tar.gz"
+  url "http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.4.3.tar.gz"
+
+  # Supported builds:
+  # petsc/3.4.2/gnu4.7.2
+  # petsc/3.4.2/gnu4.7.2_64indices
+  # petsc/3.4.2-debug/gnu4.7.2
+  # petsc/3.4.2-debug/gnu4.7.2_64indices
+  # petsc-complex/3.4.2/gnu4.7.2
+  # petsc-complex/3.4.2/gnu4.7.2_64indices
+  # petsc-complex/3.4.2-debug/gnu4.7.2
+  # petsc-complex/3.4.2-debug/gnu4.7.2_64indices
+
+  depends_on do
+    packages = [ ]
+    packages = [ "cblas/20110120/*acml*" ] #if module_is_available?("PrgEnv-gnu")
+    packages
+  end
 
   module_commands do
-    commands = [ "unload PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi acml cmake cray-hdf5 hdf5 cray-tpsl" ]
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
-    when /pgi/
-      commands << "load PrgEnv-pgi"
-      if build_name =~ /pgi([\d\.]+)/
-        compiler_module = "pgi/#{$1}"
-        commands << "swap pgi #{compiler_module}" if module_is_available? compiler_module
-      end
     when /gnu/
-      commands << "load PrgEnv-gnu"
-      if build_name =~ /gnu([\d\.]+)/
-        compiler_module = "gcc/#{$1}"
-        commands << "swap gcc #{compiler_module}" if module_is_available? compiler_module
-      end
+      commands << "load #{pe}gnu"
+      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+    when /pgi/
+      commands << "load #{pe}pgi"
+      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      commands << "load PrgEnv-intel"
-      if build_name =~ /intel([\d\.]+)/
-        compiler_module = "intel/#{$1}"
-        commands << "swap intel #{compiler_module}" if module_is_available? compiler_module
-      end
+      commands << "load #{pe}intel"
+      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+    when /cray/
+      commands << "load #{pe}cray"
+      commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
+
+    commands << "unload acml"
     commands << "load acml"
+
+    if pe == "PrgEnv-"
+      commands << "unload cray-hdf5 hdf5 cray-tpsl"
+      commands << "load cray-hdf5"
+      commands << "load cray-tpsl"
+    else
+      commands << "unload hdf5 szip"
+      commands << "load szip hdf5/1.8.11"
+    end
+
     commands << "load cmake"
-    commands << "load cray-hdf5"
-    commands << "load cray-tpsl"
     commands
   end
 
   def install
     ENV['PETSC_DIR'] = prefix+"/source"
 
-    acml_dir        = module_environment_variable("acml",        "ACML_DIR")
-    cray_tpsl_dir   = module_environment_variable("cray-tpsl",   "CRAY_TPSL_PREFIX_DIR")
-    cray_mpich2_dir = module_environment_variable("cray-mpich2", "CRAY_MPICH2_DIR")
-    hdf5_dir        = module_environment_variable("cray-hdf5",   "HDF5_DIR")
+    cray_build = true if module_is_available?("PrgEnv-gnu")
+
+    if cray_build
+      compilers        = "'--with-cc=cc', '--with-cxx=CC', '--with-fc=ftn',"
+      # TITAN compute node
+      known_info       = """
+        '--known-level1-dcache-size=16384',
+        '--known-level1-dcache-linesize=64',
+        '--known-level1-dcache-assoc=4',
+        '--known-memcmp-ok=1',
+        '--known-sizeof-char=1',
+        '--known-sizeof-void-p=8',
+        '--known-sizeof-short=2',
+        '--known-sizeof-int=4',
+        '--known-sizeof-long=8',
+        '--known-sizeof-long-long=8',
+        '--known-sizeof-float=4',
+        '--known-sizeof-double=8',
+        '--known-sizeof-size_t=8',
+        '--known-bits-per-byte=8',
+        '--known-sizeof-MPI_Comm=4',
+        '--known-sizeof-MPI_Fint=4',
+        '--known-mpi-long-double=1',
+        '--known-mpi-c-double-complex=1',
+      """
+      sundials_prefix  = module_environment_variable("cray-tpsl",   "CRAY_TPSL_PREFIX_DIR")
+      mpich2_prefix    = module_environment_variable("cray-mpich2", "CRAY_MPICH2_DIR")
+      hdf5_prefix      = module_environment_variable("cray-hdf5",   "HDF5_DIR")
+    else
+      # compilers        = "'--with-cc=mpicc', '--with-cxx=mpiCC', '--with-fc=mpif90',"
+      compilers        = ""
+      # This is for RHEA
+      known_info       = """
+        '--known-level1-dcache-size=32768',
+        '--known-level1-dcache-linesize=64',
+        '--known-level1-dcache-assoc=8',
+        '--known-memcmp-ok=1',
+        '--known-sizeof-char=1',
+        '--known-sizeof-void-p=8',
+        '--known-sizeof-short=2',
+        '--known-sizeof-int=4',
+        '--known-sizeof-long=8',
+        '--known-sizeof-long-long=8',
+        '--known-sizeof-float=4',
+        '--known-sizeof-double=8',
+        '--known-sizeof-size_t=8',
+        '--known-bits-per-byte=8',
+        '--known-sizeof-MPI_Comm=8',
+        '--known-sizeof-MPI_Fint=4',
+        '--known-mpi-long-double=1',
+        '--known-mpi-c-double-complex=0',
+      """
+      sundials_prefix  = ""
+      sundials_options = "'--download-sundials',"
+      mpich2_prefix    = module_environment_variable("ompi", "OMPI_DIR")
+      hdf5_prefix      = module_environment_variable("hdf5/1.8.11", "HDF5_DIR")
+    end
+
+    acml_prefix = module_environment_variable("acml", "ACML_DIR")
+    FileUtils.mkdir_p "#{prefix}/lib"
 
     case build_name
     when /gnu/
-      blaslapack = "#{acml_dir}/gfortran64/lib/libacml.a"
+      FileUtils.cp "#{cblas.prefix}/lib/libcblas.a", "#{prefix}/lib", verbose: true
+      FileUtils.cp "#{acml_prefix}/gfortran64/lib/libacml.a",   "#{prefix}/lib", verbose: true
+      FileUtils.cp "#{acml_prefix}/gfortran64/lib/libacml.so",  "#{prefix}/lib", verbose: true
+      blaslapack = "#{acml_prefix}/gfortran64/lib/libacml.a"
+      blaslapack += ",#{cblas.prefix}/lib/libcblas.a" unless cray_build
+      blaslapack_options = """
+          # '--with-blas-lapack-lib=#{blaslapack}',
+          '--with-blas-lapack-dir=#{acml_prefix}/gfortran64',
+          '--with-ldflags=-lacml -lacml_mv -lacml_cw -lcblas',
+          # '--with-blas-lapack-lib=-lacml -lacml_mv -lacml_cw',
+          """
 
-      sundials_libs = [
-        "#{cray_tpsl_dir}/lib/libsundials_cvode_gnu.a",
-        "#{cray_tpsl_dir}/lib/libsundials_cvodes_gnu.a",
-        "#{cray_tpsl_dir}/lib/libsundials_ida_gnu.a",
-        "#{cray_tpsl_dir}/lib/libsundials_idas_gnu.a",
-        "#{cray_tpsl_dir}/lib/libsundials_kinsol_gnu.a",
-        "#{cray_tpsl_dir}/lib/libsundials_nvecparallel_gnu.a",
-        "#{cray_tpsl_dir}/lib/libsundials_nvecserial_gnu.a"
-      ]
+      if sundials_prefix.present?
+        sundials_libs = [
+          "#{sundials_prefix}/lib/libsundials_cvode_gnu.a",
+          "#{sundials_prefix}/lib/libsundials_cvodes_gnu.a",
+          "#{sundials_prefix}/lib/libsundials_ida_gnu.a",
+          "#{sundials_prefix}/lib/libsundials_idas_gnu.a",
+          "#{sundials_prefix}/lib/libsundials_kinsol_gnu.a",
+          "#{sundials_prefix}/lib/libsundials_nvecparallel_gnu.a",
+          "#{sundials_prefix}/lib/libsundials_nvecserial_gnu.a"
+        ]
+        sundials_options = "'--with-sundials-include=#{sundials_prefix}/include', '--with-sundials-lib=#{sundials_libs.join(', ')}',"
+      end
 
-      sundials_options = "'--with-sundials-include=#{cray_tpsl_dir}/include', '--with-sundials-lib=#{sundials_libs.join(', ')}',"
       mumps_options    = "'--download-mumps',"
       pthread_options  = "'--with-pthreadclasses', '--with-pthread-dir=/usr',"
-    when /pgi/
-      blaslapack = "#{acml_dir}/pgi64/lib/libacml.a"
 
-      sundials_libs = [
-        "#{cray_tpsl_dir}/lib/libsundials_cvode_pgi.a",
-        "#{cray_tpsl_dir}/lib/libsundials_cvodes_pgi.a",
-        "#{cray_tpsl_dir}/lib/libsundials_ida_pgi.a",
-        "#{cray_tpsl_dir}/lib/libsundials_idas_pgi.a",
-        "#{cray_tpsl_dir}/lib/libsundials_kinsol_pgi.a",
-        "#{cray_tpsl_dir}/lib/libsundials_nvecparallel_pgi.a",
-        "#{cray_tpsl_dir}/lib/libsundials_nvecserial_pgi.a"
-      ]
+    # when /pgi/
+    #   blaslapack = "#{acml_prefix}/pgi64/lib/libacml.a"
 
-      sundials_options = "'--with-sundials-include=#{cray_tpsl_dir}/include', '--with-sundials-lib=#{sundials_libs.join(', ')}',"
+    #   if sundials_prefix.present?
+    #     sundials_libs = [
+    #       "#{sundials_prefix}/lib/libsundials_cvode_pgi.a",
+    #       "#{sundials_prefix}/lib/libsundials_cvodes_pgi.a",
+    #       "#{sundials_prefix}/lib/libsundials_ida_pgi.a",
+    #       "#{sundials_prefix}/lib/libsundials_idas_pgi.a",
+    #       "#{sundials_prefix}/lib/libsundials_kinsol_pgi.a",
+    #       "#{sundials_prefix}/lib/libsundials_nvecparallel_pgi.a",
+    #       "#{sundials_prefix}/lib/libsundials_nvecserial_pgi.a"
+    #     ]
+    #     sundials_options = "'--with-sundials-include=#{sundials_prefix}/include', '--with-sundials-lib=#{sundials_libs.join(', ')}',"
+    #   end
 
-      mumps_libs = [
-        "#{cray_tpsl_dir}/lib/libcmumps_pgi.a",
-        "#{cray_tpsl_dir}/lib/libptesmumps_pgi.a",
-        "#{cray_tpsl_dir}/lib/libdmumps_pgi.a",
-        "#{cray_tpsl_dir}/lib/libsmumps_pgi.a",
-        "#{cray_tpsl_dir}/lib/libesmumps_pgi.a",
-        "#{cray_tpsl_dir}/lib/libzmumps_pgi.a",
-        "#{cray_tpsl_dir}/lib/libmumps_common_pgi.a"
-      ]
+    #   mumps_libs = [
+    #     "#{sundials_prefix}/lib/libcmumps_pgi.a",
+    #     "#{sundials_prefix}/lib/libptesmumps_pgi.a",
+    #     "#{sundials_prefix}/lib/libdmumps_pgi.a",
+    #     "#{sundials_prefix}/lib/libsmumps_pgi.a",
+    #     "#{sundials_prefix}/lib/libesmumps_pgi.a",
+    #     "#{sundials_prefix}/lib/libzmumps_pgi.a",
+    #     "#{sundials_prefix}/lib/libmumps_common_pgi.a"
+    #   ]
 
-      mumps_options = "'--with-mumps-include=#{cray_tpsl_dir}/include', '--with-mumps-lib=#{mumps_libs.join(', ')}',"
-      # PTHREAD_OPTIONS="'--with-pthread-lib=-lpthread',"
+    #   mumps_options = "'--with-mumps-include=#{sundials_prefix}/include', '--with-mumps-lib=#{mumps_libs.join(', ')}',"
+    #   # PTHREAD_OPTIONS="'--with-pthread-lib=-lpthread',"
+    end
+
+    if cray_build
+      mpi_options = """
+        '--with-mpi-shared=0',
+        '--with-shared-libraries=0',
+        '--known-mpi-shared-libraries=0',
+        '--with-clib-autodetect=0',
+        '--with-fortranlib-autodetect=0',
+        '--with-cxxlib-autodetect=0',
+      """
+    else
+      mpi_options = """
+        '--with-mpi-shared=1',
+        '--with-shared-libraries=1',
+        '--known-mpi-shared-libraries=1',
+        '--with-clib-autodetect=1',
+        '--with-fortranlib-autodetect=1',
+        '--with-cxxlib-autodetect=1',
+      """
     end
 
     petsc_configure = "config/petsc-configure.py"
@@ -126,17 +239,14 @@ class PetscFormula < Formula
         #!/usr/bin/env python
         configure_options = [
           '--prefix=#{prefix}',
-          #'--PETSC_ARCH=xk-debug',
+          #'--PETSC_ARCH=#{build_name}',
           '--with-debugging=#{debug}',
           '--with-scalar-type=#{scalar}',
           #{index_options}
           #'--COPTFLAGS=-fast -mp',
           #'--CXXOPTFLAGS=-fast -mp',
           #'--FOPTFLAGS=-fast -mp',
-          '--with-blas-lapack-lib=#{blaslapack}',
-          '--with-ldflags=-lacml -lacml_mv -lacml_cw',
-          #'--with-blas-lapack-lib=-lacml -lacml_mv -lacml_cw',
-          #'--with-mpiexec=/bin/false',
+          #{blaslapack_options}
           '--with-x=0',
           '--download-umfpack',
           #{plapack_options}
@@ -155,37 +265,15 @@ class PetscFormula < Formula
           '--download-pastix',
           #{triangle_options}
           #{sundials_options}
-          '--known-level1-dcache-size=16384',
-          '--known-level1-dcache-linesize=64',
-          '--known-level1-dcache-assoc=4',
-          '--known-memcmp-ok=1',
-          '--known-sizeof-char=1',
-          '--known-sizeof-void-p=8',
-          '--known-sizeof-short=2',
-          '--known-sizeof-int=4',
-          '--known-sizeof-long=8',
-          '--known-sizeof-long-long=8',
-          '--known-sizeof-float=4',
-          '--known-sizeof-double=8',
-          '--known-sizeof-size_t=8',
-          '--known-bits-per-byte=8',
-          '--known-sizeof-MPI_Comm=4',
-          '--known-sizeof-MPI_Fint=4',
-          '--known-mpi-long-double=0',
-          '--known-mpi-c-double-complex=0',
-          '--with-cc=cc',
-          '--with-cxx=CC',
-          '--with-fc=ftn',
-          '--with-mpi-dir=#{cray_mpich2_dir}',
-          '--with-hdf5-dir=#{hdf5_dir}',
+          #{known_info}
+          #{compilers}
+          '--with-hdf5-dir=#{hdf5_prefix}',
+          '--with-mpi=1',
+          '--with-mpi-dir=#{mpich2_prefix}',
+          #'--with-mpiexec=/bin/false',
           #{pthread_options}
           '--with-batch=1',
-          '--with-mpi-shared=0',
-          '--with-shared-libraries=0',
-          '--known-mpi-shared-libraries=0',
-          '--with-clib-autodetect=0',
-          '--with-fortranlib-autodetect=0',
-          '--with-cxxlib-autodetect=0',
+          #{mpi_options}
         ]
         if __name__ == '__main__':
           import os
