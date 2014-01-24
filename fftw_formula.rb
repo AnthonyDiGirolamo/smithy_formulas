@@ -43,10 +43,13 @@ class FftwFormula < Formula
       ENV["F77"] = "pgf77"
       ENV["FC"]  = "pgf90"
     end
+
+    enable_mpi = (name =~ /mpi/)
+
     module_list
-    system "./configure --prefix=#{prefix} --enable-fortran"
+    system "./configure --prefix=#{prefix} --enable-fortran #{enable_mpi ? "--enable-mpi" : ""}"
     system "make"
-    system "make check"
+    system "make check" unless enable_mpi
     system "make install"
   end
 
@@ -59,23 +62,31 @@ class FftwFormula < Formula
        puts stderr "    or   cc test.c      OR   pgcc/icc/gcc test.c \${FFTW3_LIB}"
     }
     module-whatis "<%= @package.name %> <%= @package.version %>"
+    conflict fftw
 
     <% if @builds.size > 1 %>
     <%= module_build_list @package, @builds, :prgenv_prefix => #{module_is_available?("PrgEnv-gnu") ? '"PrgEnv-"' : '"PE-"'} %>
-    
+
     set PREFIX <%= @package.version_directory %>/$BUILD
     <% else %>
     set PREFIX <%= @package.prefix %>
     <% end %>
 
     set FFTW3_INCLUDE_PATH "-I$PREFIX/include"
-    set FFTW3_LD_OPTS "-L$PREFIX/lib -lfftw3 -lfftw3f"
     setenv FFTW3_LIB "$FFTW3_INCLUDE_PATH $FFTW3_LD_OPTS"
-    
+
     # Use Cray magic to link against automagically
     prepend-path PE_PRODUCT_LIST "FFTW3"
     setenv FFTW3_INCLUDE_OPTS "-I$PREFIX/include"
+
+    <% if (@package.name =~ /mpi/) %>
+    set FFTW3_LD_OPTS "-L$PREFIX/lib -lfftw3_mpi -lfftw3f_mpi"
+    setenv FFTW3_POST_LINK_OPTS "-L$PREFIX/lib -lfftw3_mpi -lfftw3f_mpi"
+    <% else %>
+    set FFTW3_LD_OPTS "-L$PREFIX/lib -lfftw3 -lfftw3f"
     setenv FFTW3_POST_LINK_OPTS "-L$PREFIX/lib -lfftw3 -lfftw3f"
+    <% end %>
+
 
   MODULEFILE
   end
