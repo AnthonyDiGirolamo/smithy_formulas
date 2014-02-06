@@ -1,8 +1,9 @@
 class GlobusFormula < Formula
   homepage "http://www.globus.org/toolkit/"
-  url "http://www.globus.org/ftppub/gt5/5.2/5.2.4/installers/src/gt5.2.4-all-source-installer.tar.gz"
-  md5 "78a844d7b25064fb285ae94cde56e30c"
-  sha1 "7ee9dcc9804584b628d8f10938a4206b9221755f"
+  url "http://www.globus.org/ftppub/gt5/5.2/5.2.5/installers/src/gt5.2.5-all-source-installer.tar.gz"
+  md5 "10ecf1cdb3c4381cb4c1534f393d263f"
+
+  module_commands ["purge"]
 
   def install
     module_list
