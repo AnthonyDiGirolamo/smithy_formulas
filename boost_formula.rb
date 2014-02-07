@@ -15,6 +15,7 @@ class BoostFormula < Formula
     when /intel/
       m << "load PrgEnv-intel"
     end
+    m
   end
 
   def install
