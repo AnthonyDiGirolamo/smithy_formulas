@@ -81,6 +81,7 @@ class PetscFormula < Formula
         '--known-sizeof-MPI_Fint=4',
         '--known-mpi-long-double=1',
         '--known-mpi-c-double-complex=1',
+        '--known-mpi-int64_t=1',
       """
       sundials_prefix  = module_environment_variable("cray-tpsl",   "CRAY_TPSL_PREFIX_DIR")
       mpich2_prefix    = module_environment_variable("cray-mpich2", "CRAY_MPICH2_DIR")
@@ -274,6 +275,7 @@ class PetscFormula < Formula
           #{pthread_options}
           '--with-batch=1',
           #{mpi_options}
+          'PETSC_ARCH=petsc-configure',
         ]
         if __name__ == '__main__':
           import os
