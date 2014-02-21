@@ -43,6 +43,8 @@ class OpenmpiFormula < Formula
     system "./configure --prefix=#{prefix} --with-platform=optimized --enable-static --enable-contrib-no-build=vt"
     system "make"
     system "make install"
+
+    notice "Double check that the linker flags are correct in these files: ./share/openmpi/mpi**-wrapper-data.txt"
   end
 
   modulefile do
