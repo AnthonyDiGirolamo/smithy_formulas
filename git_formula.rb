@@ -1,7 +1,7 @@
 class GitFormula < Formula
   homepage "https://git-core.googlecode.com/"
-  url "https://git-core.googlecode.com/files/git-1.8.4.1.tar.gz"
-  sha1 "49004a8dfcbb7c0848147737d9877fd7313a42ec"
+  url "http://git-core.googlecode.com/files/git-1.8.5.1.tar.gz"
+  sha1 "dcd244c7198e8afe42ab223f7b3c9b1ae01749c3"
   depends_on "curl"
 
   module_commands [ "purge" ]
@@ -13,8 +13,8 @@ class GitFormula < Formula
     system "make install"
 
     system "mkdir -p #{prefix}/share/man"
-    system "curl -O https://git-core.googlecode.com/files/git-manpages-1.8.4.1.tar.gz" 
-    system "cd #{prefix}/share/man && tar xf #{prefix}/source/git-manpages-1.8.4.1.tar.gz"
+    system "curl -O https://git-core.googlecode.com/files/git-manpages-1.8.5.1.tar.gz" 
+    system "cd #{prefix}/share/man && tar xf #{prefix}/source/git-manpages-1.8.5.1.tar.gz"
 
     system "wget http://search.cpan.org/CPAN/authors/id/S/SH/SHLOMIF/Error-0.17021.tar.gz"
     system "tar xf Error-0.17021.tar.gz"
