@@ -1,8 +1,8 @@
 class GromacsFormula < Formula
   homepage "http://www.gromacs.org"
-  url "ftp://ftp.gromacs.org/pub/gromacs/gromacs-4.6.6.tar.gz"
+  url "ftp://ftp.gromacs.org/pub/gromacs/gromacs-5.0.tar.gz"
   
-  module_commands ["unload PrgEnv-pgi PrgEnv-gnu PrgEnv-intel PrgEnv-cray","load PrgEnv-gnu","load cudatoolkit","load cmake"]
+  module_commands ["unload PrgEnv-pgi PrgEnv-gnu PrgEnv-intel PrgEnv-cray","load PrgEnv-gnu","load cudatoolkit","load cmake","load fftw"]
 
   def install
     module_list
@@ -10,18 +10,21 @@ class GromacsFormula < Formula
     Dir.chdir("build")
 
     cmake_options = {
-      "GMX_BUILD_OWN_FFTW"=>"ON",
+      "CMAKE_C_COMPILER"=>"cc", 
+      "CMAKE_CXX_COMPILER"=>"CC",
+      "GMX_MPI"=>"on",
+      "CMAKE_INSTALL_PREFIX"=> prefix, 
+      "BUILD_SHARED_LIBS"=>"off",
+      "GMX_FFT_LIBRARY"=>"fftw3",
+      "FFTWF_LIBRARY"=>"$FFTW_DIR/libfftw3f.a",
+      "FFTWF_INCLUDE_DIR"=>"$FFTW_INC", 
+      "CMAKE_SKIP_RPATH"=>"YES",
       "GMX_GPU"=>"ON",
-      "GMX_MPI"=>"ON",
-      "CUDA_TOOLKIT_ROOT_DIR"=>"$CRAY_CUDATOOLKIT_DIR",
-      "BUILD_SHARED_LIBS"=>"OFF",
-      "GMX_PREFER_STATIC_LIBS"=>"ON",
-      "CMAKE_INSTALL_PREFIX" => prefix,
-      "CMAKE_C_COMPILER" => "cc",
-      "CUDA_NVCC_HOST_COMPILER" => "g++"
-    } 
+      "GMX_USE_RDTSCP"=>"OFF",
+      "GMX_SIMD"=>"AVX_128_FMA"
+    }
     options_string = cmake_options.each_pair.collect{|k,v| "-D#{k}=#{v}"}.join(' ')
-    system "CC=cc CXX=CC CMAKE_C_COMPILER=cc cmake #{options_string} .."
+    system "cmake .. #{options_string}"
     system "make"
     system "make install"
   end
