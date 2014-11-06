@@ -7,9 +7,13 @@ class ValgrindFormula < Formula
     "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel PrgEnv-cray"
   ]
 
+  notice_warn "If this needs to be installed in lustre run Smithy with these options:"
+  notice_warn "smithy --software-root=/lustre/atlas --arch=sw formula install valgrind/3.9.0/sles11.1_gnu4.8.2"
+
+
   def install
     module_list
-    system "./configure --prefix=#{prefix} --build=amd64-linux"
+    system "./configure --prefix=#{prefix}"
     system "make"
     system "make install"
   end
