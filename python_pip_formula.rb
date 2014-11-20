@@ -1,23 +1,22 @@
 class PythonPipFormula < Formula
   homepage "https://pypi.python.org/pypi/pip"
-  url "https://pypi.python.org/packages/source/p/pip/pip-1.4.1.tar.gz"
-  md5 "6afbb46aeb48abac658d4df742bff714"
+  url "https://pypi.python.org/packages/source/p/pip/pip-1.5.1.tar.gz"
 
   depends_on do
     case build_name
     when /python3.3/
-      [ "python/3.3.2", "python_setuptools/*/*python3.3*" ]
+      [ "python/3.3.0" ]
     when /python2.7/
-      [ "python/2.7.5", "python_setuptools/*/*python2.7*" ]
+      [ "python/2.7.3", "python_setuptools/*/*python2.7*" ]
     end
   end
 
   modules do
     case build_name
     when /python3.3/
-      [ "python/3.3.2", "python_setuptools" ]
+      [ "python/3.3.0" ]
     when /python2.7/
-      [ "python/2.7.5", "python_setuptools" ]
+      [ "python/2.7.3", "python_setuptools" ]
     end
   end
 
@@ -30,7 +29,7 @@ class PythonPipFormula < Formula
     when /python3.3/
       python_binary = "python3.3"
       libdirs << "#{prefix}/lib/python3.3/site-packages"
-      libdirs << "#{python_setuptools.prefix}/lib/python3.3/site-packages"
+      # libdirs << "#{python_setuptools.prefix}/lib/python3.3/site-packages"
     when /python2.7/
       libdirs << "#{prefix}/lib/python2.7/site-packages"
       libdirs << "#{python_setuptools.prefix}/lib/python2.7/site-packages"

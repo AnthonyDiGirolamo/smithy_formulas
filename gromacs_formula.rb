@@ -1,7 +1,8 @@
 class GromacsFormula < Formula
   homepage "http://www.gromacs.org"
-  url "ftp://ftp.gromacs.org/pub/gromacs/gromacs-5.0.tar.gz"
+  url "ftp://ftp.gromacs.org/pub/gromacs/gromacs-5.0.2.tar.gz"
   
+#  module_commands ["unload PrgEnv-pgi PrgEnv-gnu PrgEnv-intel PrgEnv-cray","load PrgEnv-gnu","load cudatoolkit","load cmake","load fftw"]
   module_commands ["unload PrgEnv-pgi PrgEnv-gnu PrgEnv-intel PrgEnv-cray","load PrgEnv-gnu","load cudatoolkit","load cmake","load fftw"]
 
   def install
@@ -20,8 +21,8 @@ class GromacsFormula < Formula
       "FFTWF_INCLUDE_DIR"=>"$FFTW_INC", 
       "CMAKE_SKIP_RPATH"=>"YES",
       "GMX_GPU"=>"ON",
-      "GMX_USE_RDTSCP"=>"OFF",
-      "GMX_SIMD"=>"AVX_128_FMA"
+      "GMX_SIMD"=>"AVX_128_FMA",
+      "GMX_USE_RDTSCP"=>"OFF"
     }
     options_string = cmake_options.each_pair.collect{|k,v| "-D#{k}=#{v}"}.join(' ')
     system "cmake .. #{options_string}"

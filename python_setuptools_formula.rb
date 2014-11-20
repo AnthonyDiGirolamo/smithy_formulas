@@ -5,9 +5,9 @@ class PythonSetuptoolsFormula < Formula
   depends_on do
     case build_name
     when /python3.3/
-      [ "python/3.3.2" ]
+      [ "python/3.3.0" ]
     when /python2.7/
-      [ "python/2.7.5" ]
+      [ "python/2.7.3" ]
     when /python2.6/
       [ ]
     end
@@ -16,9 +16,9 @@ class PythonSetuptoolsFormula < Formula
   modules do
     case build_name
     when /python3.3/
-      [ "python/3.3.2" ]
+      [ "python/3.3.0" ]
     when /python2.7/
-      [ "python/2.7.5" ]
+      [ "python/2.7.3" ]
     end
   end
 

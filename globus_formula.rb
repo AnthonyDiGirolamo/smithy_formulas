@@ -1,8 +1,7 @@
 class GlobusFormula < Formula
   homepage "http://www.globus.org/toolkit/"
-  url "http://www.globus.org/ftppub/gt5/5.2/5.2.5/installers/src/gt5.2.5-all-source-installer.tar.gz"
+  url "http://toolkit.globus.org/ftppub/gt5/5.2/5.2.5/installers/src/gt5.2.5-all-source-installer.tar.gz"
   md5 "10ecf1cdb3c4381cb4c1534f393d263f"
-
   module_commands ["purge"]
 
   def install

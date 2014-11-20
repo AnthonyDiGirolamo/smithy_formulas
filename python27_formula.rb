@@ -4,6 +4,8 @@ class Python27Formula < Formula
 
   depends_on "sqlite"
 
+  module_commands ["purge"]
+
   def install
     module_list
     ENV["CPPFLAGS"] = "-I#{sqlite.prefix}/include"

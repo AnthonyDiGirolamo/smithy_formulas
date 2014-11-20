@@ -10,7 +10,6 @@ class PythonMpi4pyFormula < Formula
       packages << "python/3.3.0"
     when /python2.7/
       packages << "python/2.7.3"
-    when /python2.6/
     end
     packages
   end
@@ -30,6 +29,8 @@ class PythonMpi4pyFormula < Formula
   end
 
   def install
+    notice_warn "This formula expects a build name containing python2.7 or python3.3"
+
     module_list
 
 #    File.open("mpi.cfg", "w+") do |f|
@@ -51,8 +52,6 @@ class PythonMpi4pyFormula < Formula
       libdirs << "#{prefix}/lib/python3.3/site-packages"
     when /python2.7/
       libdirs << "#{prefix}/lib/python2.7/site-packages"
-    when /python2.6/
-      libdirs << "#{prefix}/lib64/python2.6/site-packages"
     end
     FileUtils.mkdir_p libdirs.first
 

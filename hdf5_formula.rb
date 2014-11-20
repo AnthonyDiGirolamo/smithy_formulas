@@ -5,30 +5,48 @@ class Hdf5Formula < Formula
 
   depends_on "szip"
 
-  module_commands do
-    pe = "PE-"
-    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+  #module_commands do
+  #  pe = "PE-"
+  #  pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
 
-    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+  #  commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+  #  case build_name
+  #  when /gnu/
+  #    commands << "load #{pe}gnu"
+  #    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+  #  when /pgi/
+  #    commands << "load #{pe}pgi"
+  #    commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
+  #  when /intel/
+  #    commands << "load #{pe}intel"
+  #    commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+  #  when /cray/
+  #    commands << "load #{pe}cray"
+  #    commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
+  #  end
+
+  #  commands << "load szip"
+  #  commands << "swap xtpe-interlagos xtpe-istanbul" if pe == "PrgEnv-"
+  #  commands
+  #end
+
+  module_commands do
+    commands = [ "purge" ]
     case build_name
     when /gnu/
-      commands << "load #{pe}gnu"
-      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+     commands << "load gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
     when /pgi/
-      commands << "load #{pe}pgi"
-      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
+      commands << "load pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      commands << "load #{pe}intel"
-      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+      commands << "load intel/#{$1}" if build_name =~ /intel([\d\.]+)/
     when /cray/
-      commands << "load #{pe}cray"
-      commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
+      commands << "load cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
-
+    commands << "load openmpi/1.8.2"
     commands << "load szip"
-    commands << "swap xtpe-interlagos xtpe-istanbul" if pe == "PrgEnv-"
     commands
   end
+
 
   def install
     module_list

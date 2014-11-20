@@ -1,7 +1,19 @@
 class BoostFormula < Formula
   homepage "http://www.boost.org/"
-  url      "http://downloads.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.bz2"
-  sha256   "047e927de336af106a24bceba30069980c191529fd76b8dff8eb9a328b48ae1d"
+
+  #Boost 1.55.0
+  #url	    "http://softlayer-ams.dl.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.bz2"
+  #sha1 "cef9a0cc7084b1d639e06cd3bc34e4251524c840"
+
+  #Boost 1.54.0
+  #url      "http://downloads.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.bz2"
+  #sha256   "047e927de336af106a24bceba30069980c191529fd76b8dff8eb9a328b48ae1d"
+
+   #Boost 1.53.0
+   url "http://downloads.sourceforge.net/project/boost/boost/1.53.0/boost_1_53_0.tar.bz2"
+   sha1 "e6dd1b62ceed0a51add3dda6f3fc3ce0f636a7f3"
+
+  
 
   depends_on [ "bzip2" ]
 

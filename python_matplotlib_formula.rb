@@ -1,13 +1,13 @@
 class PythonMatplotlibFormula < Formula
   homepage "http://matplotlib.org/"
-  url "https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.3.1/matplotlib-1.3.1.tar.gz"
+  url "https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.0/matplotlib-1.4.0.tar.gz"
 
   depends_on do
     case build_name
     when /python3.3/
       [ "python/3.3.2", "python_numpy/1.8.0/*python3.3*" ]
     when /python2.7/
-      [ "python/2.7.5", "python_numpy/1.8.0/*python2.7*", "python_pygtk/*/*python2.7*", "python_pygobject/*/*python2.7*", "python_pycairo/*/*python2.7*" ]
+      [ "python/2.7.3", "python_numpy/1.7.1/*python2.7*", "python_pygtk/*/*python2.7*", "python_pygobject/*/*python2.7*", "python_pycairo/*/*python2.7*" ]
     end
   end
 
@@ -16,7 +16,7 @@ class PythonMatplotlibFormula < Formula
     when /python3.3/
       [ "python/3.3.0", "python_numpy/1.8.0" ]
     when /python2.7/
-      [ "python/2.7.3", "python_numpy/1.8.0", "python_pygtk", "python_pygobject", "python_pycairo" ]
+      [ "python/2.7.3", "python_numpy/1.7.1", "python_pygtk", "python_pygobject", "python_pycairo" ]
     end
   end
 

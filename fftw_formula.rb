@@ -1,32 +1,50 @@
 class FftwFormula < Formula
   homepage "http://www.fftw.org/index.html"
-  url "http://www.fftw.org/fftw-3.3.3.tar.gz"
+  #url "http://www.fftw.org/fftw-3.3.3.tar.gz"
+  url "file:///sw/fftw/fftw/fftw-3.3.3.tar.gz"
   md5 "0a05ca9c7b3bfddc8278e7c40791a1c2"
 
-  module_commands do
-    pe = "PE-"
-    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+  #module_commands do
+  #  pe = "PE-"
+  #  pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
 
-    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+  #  commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+  #  case build_name
+  #  when /gnu/
+  #    commands << "load #{pe}gnu"
+  #    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+  #  when /pgi/
+  #    commands << "load #{pe}pgi"
+  #    commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
+  #  when /intel/
+  #    commands << "load #{pe}intel"
+  #    commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+  #  when /cray/
+  #    commands << "load #{pe}cray"
+  #    commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
+  #  end
+
+  #  commands
+  #end
+
+  module_commands do
+    commands = [ "purge" ]
     case build_name
     when /gnu/
-      commands << "load #{pe}gnu"
-      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+     commands << "load gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
     when /pgi/
-      commands << "load #{pe}pgi"
-      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
+      commands << "load pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      commands << "load #{pe}intel"
-      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+      commands << "load intel/#{$1}" if build_name =~ /intel([\d\.]+)/
     when /cray/
-      commands << "load #{pe}cray"
-      commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
+      commands << "load cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
-
+    commands << "load openmpi/1.8.2"
     commands
   end
 
   def install
+    module_list
     if build_name =~ /gnu/
       ENV["CC"]  = "gcc"
       ENV["CXX"] = "g++"
@@ -44,12 +62,12 @@ class FftwFormula < Formula
       ENV["FC"]  = "pgf90"
     end
 
-    enable_mpi = (name =~ /mpi/)
+    enable_parallel= (name =~ /parallel/) ? "--enable-openmp --enable-mpi --enable-threads" : ""
 
     module_list
-    system "./configure --prefix=#{prefix} --enable-fortran #{enable_mpi ? "--enable-mpi" : ""}"
+    system "./configure --prefix=#{prefix} --enable-fortran #{enable_parallel}"
     system "make"
-    system "make check" unless enable_mpi
+    system "make check" unless enable_parallel
     system "make install"
   end
 
@@ -57,9 +75,11 @@ class FftwFormula < Formula
   <<-MODULEFILE.strip_heredoc
     #%Module
     proc ModulesHelp { } {
-       puts stderr "<%= @package.name %> <%= @package.version %>"
-       puts stderr "Usage:   ftn test.f90   OR   pgf90/ifort/gfortran test.f90  \${FFTW3_LIB}"
-       puts stderr "    or   cc test.c      OR   pgcc/icc/gcc test.c \${FFTW3_LIB}"
+       puts stderr {
+       <%= @package.name %> <%= @package.version %>
+       Usage:   pgf90/ifort/gfortran test.f90  \${FFTW3_INCLUDE_OPTS} \${FFTW3_LD_OPTS_[SERIAL|MPI|OMP|THREADS]}
+           or   pgcc/icc/gcc test.c \${FFTW3_INCLUDE_OPTS} \${FFTW3_LD_OPTS_[SERIAL|MPI|OMP|THREADS]}
+       }
     }
     module-whatis "<%= @package.name %> <%= @package.version %>"
     conflict fftw
@@ -72,21 +92,17 @@ class FftwFormula < Formula
     set PREFIX <%= @package.prefix %>
     <% end %>
 
-    set FFTW3_INCLUDE_PATH "-I$PREFIX/include"
-    setenv FFTW3_LIB "$FFTW3_INCLUDE_PATH $FFTW3_LD_OPTS"
+    prepend-path LD_LIBRARY_PATH $PREFIX/lib
 
-    # Use Cray magic to link against automagically
-    prepend-path PE_PRODUCT_LIST "FFTW3"
+    setenv FFTW3_DIR "$PREFX"
     setenv FFTW3_INCLUDE_OPTS "-I$PREFIX/include"
+    setenv FFTW3_LD_OPTS_SERIAL "-L$PREFIX/lib -lfftw3"
+    setenv FFTW3_LD_OPTS_MPI "-L$PREFIX/lib -lfftw3_mpi -lfftw3"
+    setenv FFTW3_LD_OPTS_OMP "-L$PREFIX/lib -lfftw3_omp -lfftw3"
+    setenv FFTW3_LD_OPTS_THREADS "-L$PREFIX/lib -lfftw3_threads -lfftw3"
 
-    <% if (@package.name =~ /mpi/) %>
-    set FFTW3_LD_OPTS "-L$PREFIX/lib -lfftw3_mpi -lfftw3f_mpi"
-    setenv FFTW3_POST_LINK_OPTS "-L$PREFIX/lib -lfftw3_mpi -lfftw3f_mpi"
-    <% else %>
-    set FFTW3_LD_OPTS "-L$PREFIX/lib -lfftw3 -lfftw3f"
-    setenv FFTW3_POST_LINK_OPTS "-L$PREFIX/lib -lfftw3 -lfftw3f"
-    <% end %>
-
+    setenv FFTW3_INCLUDE_PATH "$PREFIX/include"
+    setenv FFTW3_LIBRARY_PATH "$PREFIX/lib"
 
   MODULEFILE
   end

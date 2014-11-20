@@ -14,45 +14,36 @@ class PetscFormula < Formula
 
   depends_on do
     packages = [ ]
-    packages = [ "cblas/20110120/*acml*" ] #if module_is_available?("PrgEnv-gnu")
+    packages = [ "cblas/20110120/*acml*" ] # if module_is_available?("PrgEnv-gnu")
     packages
   end
 
   module_commands do
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
-
     commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
     when /gnu/
-      commands << "load #{pe}gnu"
-      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+     commands << "load #{pe}gnu/4.7.1-1.8.2"
+     commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
     when /pgi/
-      commands << "load #{pe}pgi"
-      commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
+      commands << "load pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      commands << "load #{pe}intel"
-      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+      commands << "load intel/#{$1}" if build_name =~ /intel([\d\.]+)/
     when /cray/
-      commands << "load #{pe}cray"
-      commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
+      commands << "load cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
-
+    commands << "unload openmpi/1.8.2"
+    commands << "load /ccs/home/vgv/privatemodules/rhea/openmpi/1.8.2"
+    
     commands << "unload acml"
     commands << "load acml"
-
-    if pe == "PrgEnv-"
-      commands << "unload cray-hdf5 hdf5 cray-tpsl"
-      commands << "load cray-hdf5"
-      commands << "load cray-tpsl"
-    else
-      commands << "unload hdf5 szip"
-      commands << "load szip hdf5/1.8.11"
-    end
-
+    commands << "load szip hdf5/1.8.11"
     commands << "load cmake"
+
     commands
   end
+
 
   def install
     ENV['PETSC_DIR'] = prefix+"/source"
@@ -112,7 +103,9 @@ class PetscFormula < Formula
       """
       sundials_prefix  = ""
       sundials_options = "'--download-sundials',"
-      mpich2_prefix    = module_environment_variable("ompi", "OMPI_DIR")
+      #mpich2_prefix    = module_environment_variable("ompi", "OMPI_DIR")
+      # needed for ompi -> openmpi switch
+      mpich2_prefix    = module_environment_variable("openmpi", "OMPI_DIR")
       hdf5_prefix      = module_environment_variable("hdf5/1.8.11", "HDF5_DIR")
     end
 
@@ -257,7 +250,7 @@ class PetscFormula < Formula
           '--download-blacs',
           #{hypre_options}
           #{mumps_options}
-          '--download-metis=1',
+          '--download-metis',
           '--download-parmetis',
           '--download-scalapack',
           #{superlu_options}
