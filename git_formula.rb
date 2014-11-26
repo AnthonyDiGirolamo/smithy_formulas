@@ -15,12 +15,6 @@ class GitFormula < Formula
     system "mkdir -p #{prefix}/share/man"
     system "wget https://git-core.googlecode.com/files/git-manpages-1.8.5.5.tar.gz" 
     system "cd #{prefix}/share/man && tar xf #{prefix}/source/git-manpages-1.8.5.5.tar.gz"
-
-    system "wget http://search.cpan.org/CPAN/authors/id/S/SH/SHLOMIF/Error-0.17021.tar.gz"
-    system "tar xf Error-0.17021.tar.gz"
-    Dir.chdir prefix + "/source/Error-0.17021"
-    system "perl Makefile.PL PREFIX=#{prefix}"
-    system "make install"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
