@@ -1,6 +1,6 @@
-class Netcdf413Formula < Formula
+class NetcdfFormula < Formula
   homepage "http://www.unidata.ucar.edu/software/netcdf/"
-  url "http://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-4.1.3.tar.gz"
+  url "none"
 
   module_commands do
     pe = "PE-"
@@ -21,7 +21,6 @@ class Netcdf413Formula < Formula
       commands << "load #{pe}cray"
       commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
-
     commands << "load szip"
     commands << "load hdf5/1.8.11"
     commands << "swap xtpe-interlagos xtpe-istanbul" if pe == "PrgEnv-"
@@ -29,8 +28,8 @@ class Netcdf413Formula < Formula
   end
 
   def install
+    raise "You must specify a version" if version == "none"
     module_list
-
     case build_name
     when /gnu/
       ENV["CC"]  = "gcc"
@@ -41,9 +40,8 @@ class Netcdf413Formula < Formula
     when /pgi/
       ENV["CC"]  = "pgcc"
       ENV["CXX"] = "pgCC"
-      ENV["F77"] = "pgf77"
       ENV["FC"]  = "pgf90"
-      ENV["F9X"]  = "pgf90"
+      ENV["F90"]  = "pgf90"
     when /intel/
       ENV["CC"]  = "icc"
       ENV["CXX"] = "icpc"
@@ -56,6 +54,53 @@ class Netcdf413Formula < Formula
     #   ENV["F77"] = "ftn --target=native"
     #   ENV["FC"]  = "ftn --target=native"
     #   ENV["F9X"] = "ftn --target=native"
+    end
+
+    tarfile = "netcdf-#{version}.tar.gz"
+    system ["wget", "http://www.unidata.ucar.edu/downloads/netcdf/ftp/#{tarfile}"] unless File.exists?(tarfile)
+    system "gzip -dc #{tarfile}|tar -xf -"
+    FileUtils.rm tarfile
+    temp_dir_name = tarfile.chomp(".tar.gz")
+    Dir.chdir temp_dir_name
+
+    ## Various fixes for compilers:
+    ##  PGI: bug in configure fails for PGI > 9 (test is on pgCC [1-5]* but should be pgCC [1-5].*
+    ##  Intel: ncvalues.cpp needs to include cstring, not string
+    case build_name
+    when /pgi/
+      # system "cp /sw/sources/netcdf/3.6.2/fixed_configure_file_for_pgi1x configure"
+      patch <<-EOF.strip_heredoc
+        diff --git a/configure b/sw/sources/netcdf/3.6.2/fixed_configure_file_for_pgi1x
+        index 5580c54..34ddc21 100755
+        --- a/configure
+        +++ b/sw/sources/netcdf/3.6.2/fixed_configure_file_for_pgi1x
+        @@ -14796,7 +14796,7 @@ fi
+                   pgCC*)
+                     # Portland Group C++ compiler
+                    case `$CC -V` in
+        -           *pgCC\ [1-5]*)
+        +           *pgCC\ [1-5].*)
+                      prelink_cmds_CXX='tpldir=Template.dir~
+                        rm -rf $tpldir~
+                        $CC --prelink_objects --instantiation_dir $tpldir $objs $libobjs $compile_deplibs~
+      EOF
+    when /intel/
+      # system "cp /sw/sources/netcdf/3.6.2/ncvalues.cpp_intel_fix cxx/ncvalues.cpp"
+      patch <<-EOF.strip_heredoc
+        diff --git a/cxx/ncvalues.cpp b/sw/sources/netcdf/3.6.2/ncvalues.cpp_intel_fix
+        index 7d92f69..ffa5ffd 100644
+        --- a/cxx/ncvalues.cpp
+        +++ b/sw/sources/netcdf/3.6.2/ncvalues.cpp_intel_fix
+        @@ -9,7 +9,7 @@
+
+         #include <config.h>
+         #include <iostream>
+        -#include <string>
+        +#include <cstring>
+
+         #include "ncvalues.h"
+
+      EOF
     end
 
     hdf5_prefix = module_environment_variable("hdf5/1.8.11", "HDF5_DIR")
@@ -73,6 +118,9 @@ class Netcdf413Formula < Formula
       "--enable-cxx"
     system "make"
     system "make install"
+
+#    Dir.chdir("..")
+#    FileUtils.rm_rf temp_dir_name
   end
 
   modulefile do
@@ -80,11 +128,11 @@ class Netcdf413Formula < Formula
     #%Module
 
     proc ModulesHelp { } {
-       puts stderr "Sets up environment to use netcdf 4.1.1"
+       puts stderr "Sets up environment to use netcdf <%= @package.version %>"
        puts stderr "Usage:   fortrancompiler test.f90 \${NETCDF_FLIB}"
        puts stderr "    or   ccompiler test.c \${NETCDF_CLIB}"
     }
-    module-whatis "Sets up environment to use netcdf 4.1.3"
+    module-whatis "Sets up environment to use netcdf <%= @package.version %>"
 
     module unload hdf5
     module unload szip
