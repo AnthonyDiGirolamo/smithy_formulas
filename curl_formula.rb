@@ -35,7 +35,7 @@ class CurlFormula < Formula
   MODULEFILE
 
   def install
-    system "./configure --prefix=#{prefix}"
+    system "./configure --prefix=#{prefix} --with-ssl"
     system "make"
     system "make install"
   end
