@@ -10,6 +10,7 @@ class GromacsFormula < Formula
     system "mkdir -p build"
     Dir.chdir("build")
 
+    fftw_lib = (build_name =~ /double/) ? "$FFTW_DIR/libfftw3.a" : "$FFTW_DIR/libfftw3f.a"
     cmake_options = {
       "CMAKE_C_COMPILER"=>"cc", 
       "CMAKE_CXX_COMPILER"=>"CC",
@@ -17,7 +18,7 @@ class GromacsFormula < Formula
       "CMAKE_INSTALL_PREFIX"=> prefix, 
       "BUILD_SHARED_LIBS"=>"off",
       "GMX_FFT_LIBRARY"=>"fftw3",
-      "FFTWF_LIBRARY"=>"$FFTW_DIR/libfftw3f.a",
+      "FFTWF_LIBRARY"=> fftw_lib,
       "FFTWF_INCLUDE_DIR"=>"$FFTW_INC", 
       "CMAKE_SKIP_RPATH"=>"YES",
       "GMX_GPU"=>"ON",
