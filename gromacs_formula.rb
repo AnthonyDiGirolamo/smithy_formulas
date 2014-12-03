@@ -10,7 +10,6 @@ class GromacsFormula < Formula
     system "mkdir -p build"
     Dir.chdir("build")
 
-    fftw_lib = (build_name =~ /double/) ? "$FFTW_DIR/libfftw3.a" : "$FFTW_DIR/libfftw3f.a"
     cmake_options = {
       "CMAKE_C_COMPILER"=>"cc", 
       "CMAKE_CXX_COMPILER"=>"CC",
@@ -18,12 +17,13 @@ class GromacsFormula < Formula
       "CMAKE_INSTALL_PREFIX"=> prefix, 
       "BUILD_SHARED_LIBS"=>"off",
       "GMX_FFT_LIBRARY"=>"fftw3",
-      "FFTWF_LIBRARY"=> fftw_lib,
+      "FFTWF_LIBRARY"=> (build_name =~ /double/) ? "$FFTW_DIR/libfftw3.a" : "$FFTW_DIR/libfftw3f.a",
       "FFTWF_INCLUDE_DIR"=>"$FFTW_INC", 
       "CMAKE_SKIP_RPATH"=>"YES",
       "GMX_GPU"=>"ON",
       "GMX_SIMD"=>"AVX_128_FMA",
-      "GMX_USE_RDTSCP"=>"OFF"
+      "GMX_USE_RDTSCP"=>"OFF",
+      "GMX_DOUBLE" => (build_name =~ /double/) ? "ON" : "OFF"
     }
     options_string = cmake_options.each_pair.collect{|k,v| "-D#{k}=#{v}"}.join(' ')
     system "cmake .. #{options_string}"
