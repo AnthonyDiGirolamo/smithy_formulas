@@ -3,7 +3,6 @@ class GitFormula < Formula
   url "https://www.kernel.org/pub/software/scm/git/git-2.2.0.tar.gz"
   sha256 "bea9548f5a39daaf7c3873b6a5be47d7f92cbf42d32957e1be955a2e0e7b83b4"
   depends_on "curl/7.39.0"
-  module_commands [ "purge" ]
 
   def install
     module_list
