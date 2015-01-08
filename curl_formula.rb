@@ -1,6 +1,6 @@
 class CurlFormula < Formula
   homepage "http://curl.haxx.se/"
-  url      "http://curl.haxx.se/download/curl-7.30.0.tar.bz2"
+  url      "http://curl.haxx.se/download/curl-7.39.0.tar.bz2"
 
   modulefile <<-MODULEFILE.strip_heredoc
     #%Module
