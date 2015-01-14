@@ -12,6 +12,7 @@ class DyninstapiFormula < Formula
 
   def install
     module_list
+    system "cp /sw/sources/powerpc/config.guess autodyninst/config.guess" if build_name.include? "ppc64le"
     config_cmd = [
       "./configure --prefix=#{prefix}",
       "--disable-m32 --disable-testsuite",
