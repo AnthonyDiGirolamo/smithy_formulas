@@ -8,8 +8,8 @@ class NcviewFormula < Formula
 
     [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel",
       "load #{pe}gnu",
-      "load hdf5",
-      "load netcdf" ]
+      "load cray-hdf5",
+      "load cray-netcdf" ]
   end
 
   depends_on [ "udunits/*/*gnu*" ]
