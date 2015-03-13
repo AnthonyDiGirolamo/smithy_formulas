@@ -3,7 +3,6 @@ class GitFormula < Formula
   url "https://github.com/git/git/archive/v2.3.2.tar.gz"
   sha256 "7d8e15a2f41b8d6c391e527f461d61027cf3391c9ccc89b8c1a1a0785f18a0fb"
   depends_on "curl/7.39.0"
-  module_commands [ "purge" ]
 
   def install
     module_list

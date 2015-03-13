@@ -22,6 +22,7 @@ class ZlibFormula < Formula
 
     set PREFIX <%= @package.prefix %>
 
+    prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path MANPATH         $PREFIX/share/man
   MODULEFILE

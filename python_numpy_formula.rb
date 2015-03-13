@@ -1,16 +1,22 @@
 class PythonNumpyFormula < Formula
   homepage "http://www.numpy.org/"
-  url "http://downloads.sourceforge.net/project/numpy/NumPy/1.8.0/numpy-1.8.0.tar.gz"
+
+  supported_build_names /python.*gnu/
+
+  concern :Version1_8_0 do
+    included do
+      url "http://downloads.sourceforge.net/project/numpy/NumPy/1.8.0/numpy-1.8.0.tar.gz"
+    end
+  end
+
+  concern :Version1_9_2 do
+    included do
+      url "http://downloads.sourceforge.net/project/numpy/NumPy/1.9.2/numpy-1.9.2.tar.gz"
+    end
+  end
 
   depends_on do
-    packages = [ "cblas/20110120/*acml*" ]
-    case build_name
-    when /python3.3/
-      packages << "python/3.3.2"
-    when /python2.7/
-      packages << "python/2.7.5"
-    end
-    packages
+    [ build_name_python, "cblas/20110120/*acml*" ]
   end
 
   module_commands do
@@ -35,20 +41,16 @@ class PythonNumpyFormula < Formula
 
     commands << "load acml"
     commands << "unload python"
+    commands << "load #{build_name_python}"
 
-    case build_name
-    when /python3.3/
-      commands << "load python/3.3.2"
-    when /python2.7/
-      commands << "load python/2.7.5"
-    end
     commands
   end
 
   def install
     module_list
 
-    acml_prefix = module_environment_variable("acml/5.3.0", "ACML_DIR")
+    acml_prefix = module_environment_variable("acml", "ACML_BASE_DIR")
+
     acml_prefix += "/gfortran64"
 
     FileUtils.mkdir_p "#{prefix}/lib"
@@ -86,21 +88,8 @@ class PythonNumpyFormula < Formula
 
     system "cat site.cfg"
 
-    python_binary = "python"
-    libdirs = []
-    case build_name
-    when /python3.3/
-      python_binary = "python3.3"
-      libdirs << "#{prefix}/lib/python3.3/site-packages"
-    when /python2.7/
-      libdirs << "#{prefix}/lib/python2.7/site-packages"
-    end
-    FileUtils.mkdir_p libdirs.first
-
-    python_start_command = "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{python_binary} "
-
-    system "#{python_start_command} setup.py build"
-    system "#{python_start_command} setup.py install --prefix=#{prefix} --compile"
+    system_python "setup.py build"
+    system_python "setup.py install --prefix=#{prefix} --compile"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -114,19 +103,19 @@ class PythonNumpyFormula < Formula
 
     prereq python
 
-    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
-      set BUILD python3.3_acml5.3.0_gnu4.7.1
-      set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7_acml5.3.0_gnu4.7.1
-      set LIBDIR python2.7
-    }
+    <% if @builds.size > 1 %>
+    <%= python_module_build_list @package, @builds %>
+
     set PREFIX <%= @package.version_directory %>/$BUILD
+    <% else %>
+    set PREFIX <%= @package.prefix %>
+    <% end %>
+
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/lib64
-    prepend-path LD_LIBRARY_PATH /opt/gcc/4.7.2/snos/lib64
+    prepend-path LD_LIBRARY_PATH /opt/gcc/4.8.2/snos/lib64
     prepend-path LD_LIBRARY_PATH /ccs/compilers/gcc/rhel6-x86_64/4.7.1/lib
     prepend-path LD_LIBRARY_PATH /ccs/compilers/gcc/rhel6-x86_64/4.7.1/lib64
     prepend-path MANPATH         $PREFIX/share/man
