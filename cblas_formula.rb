@@ -1,4 +1,4 @@
-class CblasAcmlFormula < Formula
+class CblasFormula < Formula
   homepage "http://www.netlib.org/blas/"
   url      "http://www.netlib.org/blas/blast-forum/cblas.tgz"
 
@@ -33,7 +33,7 @@ class CblasAcmlFormula < Formula
 
     FileUtils.rm_f "Makefile.in"
 
-    acml_prefix = module_environment_variable("acml/5.3.0", "ACML_DIR")
+    acml_prefix = module_environment_variable("acml", "ACML_BASE_DIR")
 
     patch <<-EOF.strip_heredoc
       diff --git a/Makefile.in b/Makefile.in

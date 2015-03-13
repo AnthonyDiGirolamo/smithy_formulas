@@ -1,10 +1,23 @@
-class Python27Formula < Formula
+class PythonFormula < Formula
   homepage "www.python.org/"
-  url "http://www.python.org/ftp/python/2.7.5/Python-2.7.5.tar.bz2"
 
   depends_on "sqlite"
 
-  module_commands ["purge"]
+  module_commands ["unload python"]
+
+  concern :Version2_7_9 do
+    included do
+      url "https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz"
+      md5 "5eebcaa0030dc4061156d3429657fb83"
+    end
+  end
+
+  concern :Version3_4_3 do
+    included do
+      url "https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tgz"
+      md5 "4281ff86778db65892c05151d5de738d"
+    end
+  end
 
   def install
     module_list
@@ -14,7 +27,6 @@ class Python27Formula < Formula
     system "make"
     system "make install"
   end
-
 
   modulefile <<-MODULEFILE.strip_heredoc
     #%Module
