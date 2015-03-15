@@ -2,12 +2,12 @@ class GitFormula < Formula
   homepage "https://git-core.googlecode.com/"
   url "https://www.kernel.org/pub/software/scm/git/git-2.2.0.tar.gz"
   sha256 "bea9548f5a39daaf7c3873b6a5be47d7f92cbf42d32957e1be955a2e0e7b83b4"
-  depends_on "curl/7.39.0"
+  depends_on ["curl/7.39.0","zlib"]
 
   def install
     module_list
     system "make configure"
-    system "./configure --prefix=#{prefix} --with-curl=#{curl.prefix}"
+    system "./configure --prefix=#{prefix} --with-curl=#{curl.prefix} --with-zlib=#{zlib.prefix}"
     system "make install"
 
     system "mkdir -p #{prefix}/share/man"
