@@ -111,6 +111,7 @@ class PythonNumpyFormula < Formula
     set PREFIX <%= @package.prefix %>
     <% end %>
 
+    set LUSTREPREFIX /lustre/atlas/sw/<%= @package.name %>/<%= @package.version %>/$BUILD
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
@@ -119,7 +120,10 @@ class PythonNumpyFormula < Formula
     prepend-path LD_LIBRARY_PATH /ccs/compilers/gcc/rhel6-x86_64/4.7.1/lib
     prepend-path LD_LIBRARY_PATH /ccs/compilers/gcc/rhel6-x86_64/4.7.1/lib64
     prepend-path MANPATH         $PREFIX/share/man
+
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
 end

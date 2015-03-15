@@ -42,7 +42,11 @@ class PythonScipyFormula < Formula
     set PREFIX <%= @package.prefix %>
     <% end %>
 
+    set LUSTREPREFIX /lustre/atlas/sw/<%= @package.name %>/<%= @package.version %>/$BUILD
+
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
 end

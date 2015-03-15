@@ -5,14 +5,14 @@ class PythonFormula < Formula
 
   module_commands ["unload python"]
 
-  concern :Version2_7_9 do
+  concern for_version("2.7.9") do
     included do
       url "https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz"
       md5 "5eebcaa0030dc4061156d3429657fb83"
     end
   end
 
-  concern :Version3_4_3 do
+  concern for_version("3.4.3") do
     included do
       url "https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tgz"
       md5 "4281ff86778db65892c05151d5de738d"
@@ -28,7 +28,8 @@ class PythonFormula < Formula
     system "make install"
   end
 
-  modulefile <<-MODULEFILE.strip_heredoc
+  modulefile do
+    <<-MODULEFILE.strip_heredoc
     #%Module
     proc ModulesHelp { } {
        puts stderr "<%= @package.name %> <%= @package.version %>"
@@ -37,12 +38,24 @@ class PythonFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
+    conflict python
+
     set PREFIX <%= @package.prefix %>
+
+    set LUSTREPREFIX /lustre/atlas/sw/<%= @package.name %>/<%= @package.version %>/<%= @package.build_name %>
+
+    prepend-path PATH            $LUSTREPREFIX/bin
+    prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib
+    prepend-path MANPATH         $LUSTREPREFIX/share/man
+    prepend-path PKG_CONFIG_PATH $LUSTREPREFIX/lib/pkgconfig
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/python2.7/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/python3.4/site-packages
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path MANPATH         $PREFIX/share/man
     prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
-    prepend-path PYTHONPATH      $PREFIX/lib/python2.7/site-packages
-  MODULEFILE
+    prepend-path PYTHONPATH      $PREFIX/lib/#{python_libdir(version)}/site-packages
+    MODULEFILE
+  end
 end

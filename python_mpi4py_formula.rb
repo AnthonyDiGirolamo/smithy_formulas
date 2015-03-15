@@ -69,7 +69,8 @@ class PythonMpi4pyFormula < Formula
     <% else %>
     set PREFIX <%= @package.prefix %>
     <% end %>
-    set LUSTREPREFIX /lustre/atlas/$PREFIX
+
+    set LUSTREPREFIX /lustre/atlas/sw/<%= @package.name %>/<%= @package.version %>/$BUILD
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
