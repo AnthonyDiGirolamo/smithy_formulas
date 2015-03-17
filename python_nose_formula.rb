@@ -6,11 +6,11 @@ class PythonNoseFormula < Formula
   supported_build_names "python2.7", "python3"
 
   depends_on do
-    build_name_python
+    python_module_from_build_name
   end
 
   module_commands do
-    ["unload python", "load #{build_name_python}"]
+    ["unload python", "load #{python_module_from_build_name}"]
   end
 
   def install
@@ -29,13 +29,8 @@ class PythonNoseFormula < Formula
 
     prereq python
 
-    <% if @builds.size > 1 %>
     <%= python_module_build_list @package, @builds %>
-
     set PREFIX <%= @package.version_directory %>/$BUILD
-    <% else %>
-    set PREFIX <%= @package.prefix %>
-    <% end %>
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib

@@ -62,15 +62,13 @@ class PythonMpi4pyFormula < Formula
 
     prereq python
 
-    <% if @builds.size > 1 %>
     <%= python_module_build_list @package, @builds %>
-
     set PREFIX <%= @package.version_directory %>/$BUILD
-    <% else %>
-    set PREFIX <%= @package.prefix %>
-    <% end %>
 
-    set LUSTREPREFIX /lustre/atlas/sw/<%= @package.name %>/<%= @package.version %>/$BUILD
+    set LUSTREPREFIX /lustre/atlas/sw/xk7/<%= @package.name %>/<%= @package.version %>/$BUILD
+
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
@@ -78,7 +76,5 @@ class PythonMpi4pyFormula < Formula
     prepend-path MANPATH         $PREFIX/share/man
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
-    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
-    prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
 end

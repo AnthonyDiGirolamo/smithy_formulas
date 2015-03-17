@@ -1,21 +1,9 @@
-class PythonSetuptoolsFormula < Formula
-  homepage "https://pypi.python.org/"
+class PythonVirtualenvFormula < Formula
+  homepage "https://virtualenv.pypa.io/"
+  url "https://pypi.python.org/packages/source/v/virtualenv/virtualenv-12.0.7.tar.gz"
+  md5 "e08796f79d112f3bfa6653cc10840114"
 
   supported_build_names "python2.7", "python3"
-
-  concern for_version("1.3") do
-    included do
-      url "https://pypi.python.org/packages/source/s/setuptools/setuptools-1.3.tar.gz"
-      md5 "3d04753974306d8a13830008e17babca"
-    end
-  end
-
-  concern for_version("14.0") do
-    included do
-      url "https://pypi.python.org/packages/source/s/setuptools/setuptools-14.0.tar.gz"
-      md5 "058655fe511deccb4359bf02727f5199"
-    end
-  end
 
   depends_on do
     python_module_from_build_name
@@ -27,6 +15,7 @@ class PythonSetuptoolsFormula < Formula
 
   def install
     module_list
+
     system_python "setup.py install --prefix=#{prefix} --compile"
   end
 

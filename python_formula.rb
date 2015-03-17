@@ -26,6 +26,14 @@ class PythonFormula < Formula
     system "./configure --prefix=#{prefix} --enable-shared"
     system "make"
     system "make install"
+
+    if python_version_from_build_name.include?("python3")
+      system "cd #{prefix}/bin && ",
+        "ln -snf python3 python ; ",
+        "ln -snf pip3 pip ; ",
+        "ln -snf pydoc3 pydoc ; ",
+        "ln -snf idle3 idle ; "
+    end
   end
 
   modulefile do
@@ -48,8 +56,7 @@ class PythonFormula < Formula
     prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib
     prepend-path MANPATH         $LUSTREPREFIX/share/man
     prepend-path PKG_CONFIG_PATH $LUSTREPREFIX/lib/pkgconfig
-    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/python2.7/site-packages
-    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/python3.4/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/#{python_libdir(version)}/site-packages
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib

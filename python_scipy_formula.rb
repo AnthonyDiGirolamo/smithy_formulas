@@ -5,14 +5,23 @@ class PythonScipyFormula < Formula
   supported_build_names "python2.7", "python3"
 
   depends_on do
-    build_name_python
+    [ python_module_from_build_name, "python_numpy/1.9.2/#{python_version_from_build_name}*" ]
   end
 
   module_commands do
-    ["unload python",
-     "load #{build_name_python}",
-     "load python_numpy/1.9.2",
-     "load gcc"]
+    [ "unload python", "load #{python_module_from_build_name}", "load python_numpy/1.9.2" ]
+  end
+
+  concern for_version("0.13.0") do
+    included do
+      depends_on do
+        [ python_module_from_build_name, "python_numpy/1.8.0/#{python_version_from_build_name}*" ]
+      end
+
+      module_commands do
+        [ "unload python", "load #{python_module_from_build_name}", "load python_numpy/1.8.0" ]
+      end
+    end
   end
 
   def install
@@ -34,19 +43,15 @@ class PythonScipyFormula < Formula
     module load python_numpy
     prereq python_numpy
 
-    <% if @builds.size > 1 %>
     <%= python_module_build_list @package, @builds %>
-
     set PREFIX <%= @package.version_directory %>/$BUILD
-    <% else %>
-    set PREFIX <%= @package.prefix %>
-    <% end %>
 
-    set LUSTREPREFIX /lustre/atlas/sw/<%= @package.name %>/<%= @package.version %>/$BUILD
+    set LUSTREPREFIX /lustre/atlas/sw/xk7/<%= @package.name %>/<%= @package.version %>/$BUILD
 
-    prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
-    prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
 end
+
