@@ -40,7 +40,7 @@ class PythonScipyFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
-    module load python_numpy
+    conflict python_scipy
     prereq python_numpy
 
     <%= python_module_build_list @package, @builds %>

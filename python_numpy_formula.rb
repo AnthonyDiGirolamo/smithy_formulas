@@ -98,12 +98,15 @@ class PythonNumpyFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
+    conflict python_numpy
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
     set LUSTREPREFIX /lustre/atlas/sw/xk7/<%= @package.name %>/<%= @package.version %>/$BUILD
 
+    prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib
+    prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib64
     prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
 

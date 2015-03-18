@@ -50,7 +50,7 @@ class PythonFormula < Formula
 
     set PREFIX <%= @package.prefix %>
 
-    set LUSTREPREFIX /lustre/atlas/sw/<%= @package.name %>/<%= @package.version %>/<%= @package.build_name %>
+    set LUSTREPREFIX /lustre/atlas/sw/xk7/<%= @package.name %>/<%= @package.version %>/<%= @package.build_name %>
 
     prepend-path PATH            $LUSTREPREFIX/bin
     prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib
