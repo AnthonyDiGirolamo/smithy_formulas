@@ -3,14 +3,14 @@ class PythonMatplotlibFormula < Formula
 
   supported_build_names /python.*_numpy.*/
 
-  concern :Version1_4_3 do
+  concern for_version("1.4.3") do
     included do
       url "https://pypi.python.org/packages/source/m/matplotlib/matplotlib-1.4.3.tar.gz"
       md5 "86af2e3e3c61849ac7576a6f5ca44267"
     end
   end
 
-  concern :Version1_4_0 do
+  concern for_version("1.4.0") do
     included do
       url "https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.0/matplotlib-1.4.0.tar.gz"
     end
