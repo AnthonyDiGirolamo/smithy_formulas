@@ -1,23 +1,28 @@
 class PythonMatplotlibFormula < Formula
   homepage "http://matplotlib.org/"
-  url "https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.0/matplotlib-1.4.0.tar.gz"
 
-  depends_on do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.2", "python_numpy/1.8.0/*python3.3*" ]
-    when /python2.7/
-      [ "python/2.7.3", "python_numpy/1.7.1/*python2.7*", "python_pygtk/*/*python2.7*", "python_pygobject/*/*python2.7*", "python_pycairo/*/*python2.7*" ]
+  supported_build_names /python.*_numpy.*/
+
+  concern :Version1_4_3 do
+    included do
+      url "https://pypi.python.org/packages/source/m/matplotlib/matplotlib-1.4.3.tar.gz"
+      md5 "86af2e3e3c61849ac7576a6f5ca44267"
     end
   end
 
-  modules do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.0", "python_numpy/1.8.0" ]
-    when /python2.7/
-      [ "python/2.7.3", "python_numpy/1.7.1", "python_pygtk", "python_pygobject", "python_pycairo" ]
+  concern :Version1_4_0 do
+    included do
+      url "https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.0/matplotlib-1.4.0.tar.gz"
     end
+  end
+
+  depends_on do
+    python_module_from_build_name
+  end
+
+  #chose not to build with [ "python_pygtk" ]
+  module_commands do
+    ["unload python", "load #{python_module_from_build_name}", "load python_numpy", "load python_pygtk"]
   end
 
   def install
@@ -110,20 +115,8 @@ class PythonMatplotlibFormula < Formula
     +
     EOF
 
-    python_binary = "python"
-    libdirs = []
-    case build_name
-    when /python3.3/
-      python_binary = "python3.3"
-      libdirs << "#{prefix}/lib/python3.3/site-packages"
-      libdirs << "#{python_numpy.prefix}/lib/python3.3/site-packages"
-    when /python2.7/
-      libdirs << "#{prefix}/lib/python2.7/site-packages"
-      libdirs << "#{python_numpy.prefix}/lib/python2.7/site-packages"
-    end
-    FileUtils.mkdir_p libdirs.first
+    system_python "setup.py install --prefix=#{prefix} --compile"
 
-    system "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{python_binary} setup.py install --prefix=#{prefix} --compile"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -138,17 +131,19 @@ class PythonMatplotlibFormula < Formula
     prereq python
     module load python_numpy
     prereq python_numpy
+    module load python_pygtk
+    prereq python_pygtk
 
-    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
-      set BUILD python3.3_numpy1.8.0
-      set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7_numpy1.8.0
-      set LIBDIR python2.7
-      module load python_pygtk python_pygobject python_pycairo
-      prereq python_pygtk python_pygobject python_pycairo
-    }
+    <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
+
+    #<% if @builds.size > 1 %>
+    #<%= python_module_build_list @package, @builds %>
+
+    #set PREFIX <%= @package.version_directory %>/$BUILD
+    #<% else %>
+    #set PREFIX <%= @package.prefix %>
+    #<% end %>
 
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
