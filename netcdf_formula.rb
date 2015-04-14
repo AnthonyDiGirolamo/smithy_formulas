@@ -1,8 +1,6 @@
 class NetcdfFormula < Formula
   homepage "http://www.unidata.ucar.edu/software/netcdf/"
-  url "https://github.com/Unidata/netcdf-c/archive/v4.3.3.1.tar.gz"
-
-  depends_on ["hdf5/1.8.11", "szip/2.1"]
+  url "none"
 
   module_commands do
     pe = "PE-"
@@ -58,16 +56,66 @@ class NetcdfFormula < Formula
     #   ENV["F9X"] = "ftn --target=native"
     end
 
-    ENV["CPPFLAGS"] = "-I#{hdf5.prefix}/include -I#{szip.prefix}/include"
-    ENV["LDFLAGS"]  = "-L#{hdf5.prefix}/lib     -L#{szip.prefix}/lib -lhdf5 -lhdf5_hl -lsz -lz -lm"
+    tarfile = "netcdf-#{version}.tar.gz"
+    system ["wget", "http://www.unidata.ucar.edu/downloads/netcdf/ftp/#{tarfile}"] unless File.exists?(tarfile)
+    system "gzip -dc #{tarfile}|tar -xf -"
+    FileUtils.rm tarfile
+    temp_dir_name = tarfile.chomp(".tar.gz")
+    Dir.chdir temp_dir_name
+
+    ## Various fixes for compilers:
+    ##  PGI: bug in configure fails for PGI > 9 (test is on pgCC [1-5]* but should be pgCC [1-5].*
+    ##  Intel: ncvalues.cpp needs to include cstring, not string
+    case build_name
+    when /pgi/
+      # system "cp /sw/sources/netcdf/3.6.2/fixed_configure_file_for_pgi1x configure"
+      patch <<-EOF.strip_heredoc
+        diff --git a/configure b/sw/sources/netcdf/3.6.2/fixed_configure_file_for_pgi1x
+        index 5580c54..34ddc21 100755
+        --- a/configure
+        +++ b/sw/sources/netcdf/3.6.2/fixed_configure_file_for_pgi1x
+        @@ -14796,7 +14796,7 @@ fi
+                   pgCC*)
+                     # Portland Group C++ compiler
+                    case `$CC -V` in
+        -           *pgCC\ [1-5]*)
+        +           *pgCC\ [1-5].*)
+                      prelink_cmds_CXX='tpldir=Template.dir~
+                        rm -rf $tpldir~
+                        $CC --prelink_objects --instantiation_dir $tpldir $objs $libobjs $compile_deplibs~
+      EOF
+    when /intel/
+      # system "cp /sw/sources/netcdf/3.6.2/ncvalues.cpp_intel_fix cxx/ncvalues.cpp"
+      patch <<-EOF.strip_heredoc
+        diff --git a/cxx/ncvalues.cpp b/sw/sources/netcdf/3.6.2/ncvalues.cpp_intel_fix
+        index 7d92f69..ffa5ffd 100644
+        --- a/cxx/ncvalues.cpp
+        +++ b/sw/sources/netcdf/3.6.2/ncvalues.cpp_intel_fix
+        @@ -9,7 +9,7 @@
+
+         #include <config.h>
+         #include <iostream>
+        -#include <string>
+        +#include <cstring>
+
+         #include "ncvalues.h"
+
+      EOF
+    end
+
+    hdf5_prefix = module_environment_variable("hdf5/1.8.11", "HDF5_DIR")
+    szip_prefix = module_environment_variable("szip/2.1", "SZIP_DIR")
+
+    ENV["CPPFLAGS"] = "-I#{hdf5_prefix}/include -I#{szip_prefix}/include"
+    ENV["LDFLAGS"]  = "-L#{hdf5_prefix}/lib     -L#{szip_prefix}/lib -lhdf5 -lhdf5_hl -lsz -lz -lm"
 
     system "echo $CPPFLAGS"
     system "echo $LDFLAGS"
     system "./configure --prefix=#{prefix}",
-#      "--enable-shared",
-#      "--enable-static",
-#      "--enable-fortran",
-      "--with-gnu-ld"
+      "--enable-shared",
+      "--enable-static",
+      "--enable-fortran",
+      "--enable-cxx"
     system "make"
     system "make install"
 
