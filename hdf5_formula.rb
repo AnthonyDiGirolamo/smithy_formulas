@@ -88,6 +88,8 @@ class Hdf5Formula < Formula
 
     if build_name.include? "fortran2003"
       args << "--enable-fortran2003"
+    elsif build_name.include? "nofortran"
+      args.delete_if {|option| option == "--enable-fortran"}
     end
 
     if name.include? "parallel"
