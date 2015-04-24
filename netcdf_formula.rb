@@ -1,6 +1,17 @@
 class NetcdfFormula < Formula
   homepage "http://www.unidata.ucar.edu/software/netcdf/"
-  url "https://github.com/Unidata/netcdf-c/archive/v4.3.3.1.tar.gz"
+
+  concern for_version("4.2.0") do
+    included do
+      url "ftp://ftp.unidata.ucar.edu/pub/netcdf/old/netcdf-4.2.0.tar.gz"
+    end
+  end
+
+  concern for_version("4.3.3.1") do
+    included do
+      url "https://github.com/Unidata/netcdf-c/archive/v4.3.3.1.tar.gz"
+    end
+  end
 
   depends_on ["hdf5/1.8.11", "szip/2.1"]
 
@@ -32,19 +43,23 @@ class NetcdfFormula < Formula
   def install
     raise "You must specify a version" if version == "none"
     module_list
+    prgenv = :native
     case build_name
     when /gnu/
+      prgenv = :gnu
       ENV["CC"]  = "gcc"
       ENV["CXX"] = "g++"
       ENV["F77"] = "gfortran"
       ENV["FC"]  = "gfortran"
       ENV["F9X"] = "gfortran"
     when /pgi/
+      prgenv = :pgi
       ENV["CC"]  = "pgcc"
       ENV["CXX"] = "pgCC"
       ENV["FC"]  = "pgf90"
       ENV["F90"]  = "pgf90"
     when /intel/
+      prgenv = :intel
       ENV["CC"]  = "icc"
       ENV["CXX"] = "icpc"
       ENV["F77"] = "ifort"
@@ -63,12 +78,18 @@ class NetcdfFormula < Formula
 
     system "echo $CPPFLAGS"
     system "echo $LDFLAGS"
-    system "./configure --prefix=#{prefix}",
-#      "--enable-shared",
-#      "--enable-static",
-#      "--enable-fortran",
-      "--with-gnu-ld"
+    config_options = ["--prefix=#{prefix}"]
+    if prgenv == :native
+      config_options << "--host=x86_64-unknown-linux-gnu"
+    else
+      config_options << "--enable-shared"
+      config_options << "--enable-static"
+      config_options << "--enable-fortran"
+    end
+    
+    system "./configure " +  config_options.join(" ")
     system "make"
+    system "make check"
     system "make install"
 
 #    Dir.chdir("..")
