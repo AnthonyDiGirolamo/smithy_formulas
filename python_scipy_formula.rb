@@ -50,6 +50,7 @@ class PythonScipyFormula < Formula
     prereq python
     conflict python_scipy
     prereq python_numpy
+    prereq PrgEnv-gnu PE-gnu
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD

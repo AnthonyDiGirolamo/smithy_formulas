@@ -5,7 +5,9 @@ class PythonH5pyFormula < Formula
 
   supported_build_names /python.*_hdf5.*/
 
-  params hdf5_module_name: global_module_is_available?("cray-hdf5") ? "cray-hdf5" : "hdf5"
+  params hdf5_module_name: cray_system? ? "cray-hdf5" : "hdf5"
+
+  additional_software_roots [ config_value("lustre-software-root").fetch(Smithy::Config.hostname) ]
 
   concern for_version("2.2.0") do
     included do
@@ -55,7 +57,6 @@ class PythonH5pyFormula < Formula
 
   modulefile do
     <<-MODULEFILE.strip_heredoc
-
     #%Module
     proc ModulesHelp { } {
        puts stderr "<%= @package.name %> <%= @package.version %>"
@@ -67,23 +68,24 @@ class PythonH5pyFormula < Formula
     prereq python
     module load #{hdf5_module_name}
     prereq #{hdf5_module_name}
-    mdule load python_numpy
+    module load python_numpy
     prereq python_numpy
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
+    set LUSTREPREFIX #{additional_software_roots.first}/#{arch}/<%= @package.name %>/<%= @package.version %>/$BUILD
 
-    set LUSTREPREFIX /lustre/atlas/sw/xk7/<%= @package.name %>/<%= @package.version %>/$BUILD
-
+    prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/lib64
+    prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib
+    prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib64
     prepend-path MANPATH         $PREFIX/share/man
-    prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
-    prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
     MODULEFILE
   end
 end

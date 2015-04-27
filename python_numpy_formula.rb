@@ -99,6 +99,7 @@ class PythonNumpyFormula < Formula
       # One line description
       module-whatis "<%= @package.name %> <%= @package.version %>"
   
+      prereq PrgEnv-gnu PE-gnu
       prereq python
       conflict python_numpy
   
