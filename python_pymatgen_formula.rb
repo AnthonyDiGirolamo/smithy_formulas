@@ -1,6 +1,7 @@
 class PythonPymatgenFormula < Formula
   homepage "http://pymatgen.org"
   url "https://github.com/materialsproject/pymatgen/archive/v3.0.13.tar.gz"
+  additional_software_roots [ config_value("lustre-software-root")[Smithy::Config.hostname] ]
 
   supported_build_names "python2.7.9"
 
@@ -11,7 +12,7 @@ class PythonPymatgenFormula < Formula
   module_commands do
     m = []
     if module_is_available?("PrgEnv-gnu")
-      m << "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel"
+      m << "unload PrgEnv-cray PrgEnv-gnu PrgEnv-pgi PrgEnv-intel"
       m << "load PrgEnv-gnu"
     else
       m << "unload PE-gnu PE-pgi PE-intel"
@@ -27,7 +28,11 @@ class PythonPymatgenFormula < Formula
 
   def install
     module_list
-    
+
+    ENV["CRAYPE_LINK_TYPE"] = "dynamic" 
+    ENV['CC']  = 'cc'
+    ENV['CXX'] = 'CC'
+
     system_python "setup.py develop --prefix=#{prefix}"
   end
 
@@ -44,6 +49,11 @@ class PythonPymatgenFormula < Formula
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
+
+    set LUSTREPREFIX /lustre/atlas/sw/xk7/<%= @package.name %>/<%= @package.version %>/$BUILD
+
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
