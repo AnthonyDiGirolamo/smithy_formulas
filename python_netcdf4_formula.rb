@@ -1,64 +1,55 @@
 class PythonNetcdf4Formula < Formula
-  homepage "http://code.google.com/p/netcdf4-python/"
-  url "http://netcdf4-python.googlecode.com/files/netCDF4-1.0.6.tar.gz"
-  sha1 "c409355f491e43d7ff8a49775d0a248a0186205d"
+  homepage "https://github.com/Unidata/netcdf4-python"
+  url "https://github.com/Unidata/netcdf4-python/archive/v1.1.7rel.tar.gz"
+  md5  "2e2d3ee7c2a26323f4d12a9d5c7b8d91"
+  additional_software_roots [ config_value("lustre-software-root")[hostname] ]
+
+  supported_build_names "python2.7.9"
 
   depends_on do
-    case build_name
-    when /python3.3/
-      ["python/3.3.2", "python_numpy/*/*python3.3*"]
-    when /python2.7/
-      ["python/2.7.5", "python_numpy/*/*python2.7*"]
-    end
+    python_module_from_build_name
   end
 
   module_commands do
-    pe = "PE-"
-    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
-
-    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
-
-    commands << "load #{pe}gnu"
-    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
-
-    commands << "unload python"
-    case build_name
-    when /python3.3/
-      commands << "load python/3.3.2"
-    when /python2.7/
-      commands << "load python/2.7.5"
+    m = []
+    if module_is_available?("PrgEnv-gnu")
+      m << "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel"
+      m << "load PrgEnv-gnu"
+      m << "load cray-hdf5"
+      m << "load cray-netcdf"
+    else
+      m << "unload PE-gnu PE-pgi PE-intel"
+      m << "load PE-gnu"
+      m << "load hdf5"
+      m << "load netcdf"
     end
 
-    commands << "load python_numpy"
+    m << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
 
-    commands << "load hdf5"
-    commands << "swap hdf5 hdf5/#{$1}" if build_name =~ /hdf5([\d\.]+)/
+    m << "unload python"
+    m << "load #{python_module_from_build_name}"
+    m << "load python_numpy"
 
-    commands << "load netcdf"
-    commands << "swap netcdf netcdf/#{$1}" if build_name =~ /netcdf([\d\.]+)/
-
-    commands
+    m
   end
 
   def install
     module_list
 
-    python_binary = "python"
-    libdirs = []
-    case build_name
-    when /python3.3/
-      python_binary = "python3.3"
-      libdirs << "#{prefix}/lib/python3.3/site-packages"
-    when /python2.7/
-      libdirs << "#{prefix}/lib/python2.7/site-packages"
-    end
-    FileUtils.mkdir_p libdirs.first
+   # libdirs = []
+   # case build_name
+   # when /python3.3/
+   #   libdirs << "#{prefix}/lib/python3.3/site-packages"
+   # when /python2.7/
+   #   libdirs << "#{prefix}/lib/python2.7/site-packages"
+   # end
+   # FileUtils.mkdir_p libdirs.first
 
-    python_start_command = "NETCDF4_DIR=$NETCDF_DIR PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{python_binary} "
+    #python_start_command = "NETCDF4_DIR=$NETCDF_DIR PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{system_python} "
 
-    system "#{python_start_command} setup.py build"
-    system "#{python_start_command} setup.py install --prefix=#{prefix} --compile"
-    system "cd test && #{python_start_command} run_all.py"
+    system_python "setup.py build"
+    system_python "setup.py install --prefix=#{prefix} --compile"
+    #system "cd test && #{python_start_command} run_all.py"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -74,21 +65,17 @@ class PythonNetcdf4Formula < Formula
     module load python_numpy
     prereq python_numpy
 
-    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
-      set BUILD python3.3_netcdf4.1.3
-      set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7_netcdf4.1.3
-      set LIBDIR python2.7
-    }
+    <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
     prepend-path PATH            $PREFIX/bin
+
+    set LUSTREPREFIX #{additional_software_roots.first}/#{arch}/<%= @package.name %>/<%= @package.version %>/$BUILD
+
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
 
-    prepend-path PATH            /opt$PREFIX/bin
-    prepend-path PYTHONPATH      /opt$PREFIX/lib/$LIBDIR/site-packages
-    prepend-path PYTHONPATH      /opt$PREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
 end
