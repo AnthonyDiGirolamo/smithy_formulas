@@ -1,4 +1,8 @@
 class PythonScipyFormula < Formula
+  # Testing numpy:
+  # module load python python_nose python_numpy python_scipy
+  # python -c 'import nose, numpy, scipy; scipy.test()'
+
   homepage "http://www.scipy.org"
   url "http://downloads.sourceforge.net/project/scipy/scipy/0.15.1/scipy-0.15.1.tar.gz"
   additional_software_roots [ config_value("lustre-software-root")[hostname] ]
@@ -11,12 +15,15 @@ class PythonScipyFormula < Formula
 
   module_commands do
     pe = "PE-"
-    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+    pe = "PrgEnv-" if cray_system?
 
     commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     commands << "load #{pe}gnu"
     commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
-    [ "unload python", "load #{python_module_from_build_name}", "load python_numpy/1.9.2" ]
+    commands << "unload python"
+    commands << "load #{python_module_from_build_name}"
+    commands << "load python_numpy/1.9.2"
+    commands
   end
 
   concern for_version("0.13.0") do

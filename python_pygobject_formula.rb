@@ -1,41 +1,34 @@
 class PythonPygobjectFormula < Formula
   homepage "http://pygtk.org/"
-  url "http://ftp.gnome.org/pub/GNOME/sources/pygobject/2.12/pygobject-2.12.3.tar.bz2"
+
+  supported_build_names "python2.7"
+
+  concern for_version("2.12.3") do
+    included do
+      url "http://ftp.gnome.org/pub/GNOME/sources/pygobject/2.12/pygobject-2.12.3.tar.bz2"
+    end
+  end
+
+  # tried 2.28.x and 3.10.x branches, seemed to complain about GLIB
+  concern for_version("2.20.0") do
+    included do
+      url "http://ftp.gnome.org/pub/GNOME/sources/pygobject/2.20/pygobject-2.20.0.tar.bz2"
+      sha256 "41e923a3f4426a3e19f6d154c424e3dac6f39defca77af602ac6272ce270fa81"
+    end
+  end
 
   depends_on do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.2" ]
-    when /python2.7/
-      [ "python/2.7.5" ]
-    end
+    [ python_module_from_build_name ]
   end
 
-  modules do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.2" ]
-    when /python2.7/
-      [ "python/2.7.5" ]
-    end
+  module_commands do
+    ["unload python", "load #{python_module_from_build_name}"]
   end
-
 
   def install
     module_list
 
-    python_binary = "python"
-    libdirs = []
-    case build_name
-    when /python3.3/
-      python_binary = "python3.3"
-      libdirs << "#{prefix}/lib/python3.3/site-packages"
-    when /python2.7/
-      libdirs << "#{prefix}/lib/python2.7/site-packages"
-    end
-    FileUtils.mkdir_p libdirs.first
-
-    system "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} ./configure --prefix=#{prefix} && make && make install"
+    system "./configure --prefix=#{prefix} && make && make install"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -49,17 +42,16 @@ class PythonPygobjectFormula < Formula
 
     prereq python
 
-    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
-      set BUILD python3.3
-      set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7
-      set LIBDIR python2.7
-    }
+    <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
+    prepend-path PATH            $PREFIX/bin
+    prepend-path LD_LIBRARY_PATH $PREFIX/lib
+    prepend-path LD_LIBRARY_PATH $PREFIX/lib64
+    prepend-path MANPATH         $PREFIX/share/man
     prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages/gtk-2.0
+
   MODULEFILE
 end

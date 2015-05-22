@@ -27,7 +27,7 @@ class PythonFormula < Formula
     system "make"
     system "make install"
 
-    if python_version_from_build_name.include?("python3")
+    if File.exist? "#{prefix}/bin/python3"
       system "cd #{prefix}/bin && ",
         "ln -snf python3 python ; ",
         "ln -snf pip3 pip ; ",

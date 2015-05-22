@@ -6,7 +6,7 @@ class CblasFormula < Formula
 
   module_commands do
     pe = "PE-"
-    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+    pe = "PrgEnv-" if cray_system?
 
     commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
