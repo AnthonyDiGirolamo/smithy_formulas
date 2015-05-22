@@ -55,7 +55,6 @@ class PythonFireworksFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
-    prereq python_setuptools
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
