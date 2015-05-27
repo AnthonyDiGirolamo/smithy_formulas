@@ -1,6 +1,13 @@
 class BoostFormula < Formula
   homepage "http://www.boost.org/"
 
+  concern for_version("1.58.0") do
+    included do
+      url "http://hivelocity.dl.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2"
+      sha1 "2fc96c1651ac6fe9859b678b165bd78dc211e881"
+    end
+  end
+
   concern for_version("1.55.0") do
     included do
       url "http://softlayer-ams.dl.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.bz2"
@@ -35,6 +42,8 @@ class BoostFormula < Formula
       m << "load PrgEnv-pgi"
     when /intel/
       m << "load PrgEnv-intel"
+    when /cray/
+      m << "load PrgEnv-cray"
     end
     m
   end
@@ -46,7 +55,7 @@ class BoostFormula < Formula
     when /gnu/
       toolset="gcc"
 
-      File.open("tools/build/v2/site-config.jam", "w+") do |f|
+      File.open("tools/build/site-config.jam", "w+") do |f|
         f.write <<-EOF.strip_heredoc
           import os ;
           local CRAY_MPICH2_DIR = [ os.environ CRAY_MPICH2_DIR ] ;
@@ -119,7 +128,7 @@ class BoostFormula < Formula
       #        object atexit = object(handle<>(PyImport_ImportModule("atexit")));
       # EOF
 
-      File.open("tools/build/v2/site-config.jam", "w+") do |f|
+      File.open("tools/build/site-config.jam", "w+") do |f|
         f.write <<-EOF.strip_heredoc
           import os ;
           local CRAY_MPICH2_DIR = [ os.environ CRAY_MPICH2_DIR ] ;
@@ -142,7 +151,7 @@ class BoostFormula < Formula
     when /intel/
       toolset="intel-linux"
 
-      File.open("tools/build/v2/user-config.jam", "w+") do |f|
+      File.open("tools/build/site-config.jam", "w+") do |f|
         f.write <<-EOF.strip_heredoc
           import os ;
           local CRAY_MPICH2_DIR = [ os.environ CRAY_MPICH2_DIR ] ;
@@ -160,6 +169,27 @@ class BoostFormula < Formula
           ;
         EOF
       end
+
+    when /cray/
+      toolset="gcc"
+      File.open("tools/build/site-config.jam", "w+") do |f|
+        f.write <<-EOF.strip_heredoc
+          import os ;
+          local CRAY_MPICH2_DIR = [ os.environ CRAY_MPICH2_DIR ] ;
+          using cray
+            : 8.3.4
+            : CC
+            : <compileflags>-I#{bzip2.prefix}/include
+              <compileflags>-I$(CRAY_MPICH2_DIR)/include
+              <linkflags>-L$(CRAY_MPICH2_DIR)/lib
+          ;
+          using mpi
+            : CC
+            : <find-shared-library>mpichcxx_cray
+            : aprun -n
+          ;
+        EOF
+      end
     end
 
     system "./bootstrap.sh --with-toolset=#{toolset} --prefix=#{prefix}"
@@ -173,6 +203,10 @@ class BoostFormula < Formula
       end
     end
 
+    # bootstrap doesn't support craycc but b2 does
+    if build_name.include?("cray")
+      toolset="cray" 
+    end
     # system "./b2 toolset=#{toolset} link=static --clean"
     # system "./b2 link=static --user-config=#{prefix}/source/tools/build/v2/user-config.jam --debug-configuration install"
     system "./b2 toolset=#{toolset} link=static --debug-configuration install"
