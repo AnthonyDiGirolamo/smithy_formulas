@@ -1,22 +1,32 @@
-class PythonVirtualenvFormula < Formula
-  homepage "https://virtualenv.pypa.io/"
-  url "https://pypi.python.org/packages/source/v/virtualenv/virtualenv-13.0.1.tar.gz"
-  md5 "1ffc011bde6667f0e37ecd976f4934db"
+class PythonWebtestFormula < Formula
+  homepage "http://webtest.pythonpaste.org/en/latest/"
+  url "https://github.com/Pylons/webtest/archive/2.0.18.tar.gz"
 
-  supported_build_names "python2.7", "python3"
+  supported_build_names "python2.7.9"
 
   depends_on do
     python_module_from_build_name
   end
 
   module_commands do
-    ["unload python", "load #{python_module_from_build_name}"]
+    m = []
+    if module_is_available?("PrgEnv-gnu")
+      m << "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel"
+      m << "load PrgEnv-gnu"
+    else
+      m << "unload PE-gnu PE-pgi PE-intel"
+      m << "load PE-gnu"
+    end
+    m << "unload python"
+    m << "load #{python_module_from_build_name}"
+    m << "load python_setuptools"
+    m
   end
 
   def install
     module_list
-
-    system_python "setup.py install --prefix=#{prefix} --compile"
+    
+    system_python "setup.py develop --prefix=#{prefix}"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
