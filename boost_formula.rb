@@ -229,6 +229,7 @@ class BoostFormula < Formula
 
     conflict boost
 
+    setenv BOOST_ROOT $PREFIX
     setenv BOOST_DIR   $PREFIX
     set    BOOST_LIB   "-L$PREFIX/lib"
     set    BOOST_INC   "-I$PREFIX/include"
