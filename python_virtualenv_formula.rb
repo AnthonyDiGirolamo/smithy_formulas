@@ -10,7 +10,9 @@ class PythonVirtualenvFormula < Formula
   end
 
   module_commands do
-    ["unload python", "load #{python_module_from_build_name}"]
+    [ "unload python",
+      "load #{python_module_from_build_name}",
+      "load python_setuptools"]
   end
 
   def install
@@ -29,6 +31,7 @@ class PythonVirtualenvFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
+    prereq python_setuptools
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
