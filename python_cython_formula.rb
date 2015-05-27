@@ -1,7 +1,8 @@
 class PythonCythonFormula < Formula
   homepage "http://cython.org/"
+  additional_software_roots [ config_value("lustre-software-root")[hostname] ]
 
-  supported_build_names /python2.7/, /python3/
+  supported_build_names "python2.7", "python3"
 
   concern for_version("0.22") do
     included do
@@ -10,18 +11,20 @@ class PythonCythonFormula < Formula
     end
   end
 
-  concern for_version("0.19.1") do
-    included do
-      url "http://cython.org/release/Cython-0.19.1.tar.gz"
-    end
-  end
-
   depends_on do
     python_module_from_build_name
   end
 
   module_commands do
-    ["unload python", "load #{python_module_from_build_name}"]
+    pe = "PE-"
+    pe = "PrgEnv-" if cray_system?
+
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+    commands << "load #{pe}gnu"
+    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+    commands << "unload python"
+    commands << "load #{python_module_from_build_name}"
+    commands
   end
 
   def install
@@ -40,13 +43,16 @@ class PythonCythonFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
+    prereq PrgEnv-gnu PE-gnu
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
-    prepend-path PATH            $PREFIX/bin
+    set LUSTREPREFIX #{additional_software_roots.first}/#{arch}/<%= @package.name %>/<%= @package.version %>/$BUILD
+
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/$LIBDIR/site-packages
+    prepend-path PYTHONPATH      $LUSTREPREFIX/lib64/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
-    prepend-path MANPATH         $PREFIX/share/man
   MODULEFILE
 end
