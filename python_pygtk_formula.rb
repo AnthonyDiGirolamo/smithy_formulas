@@ -1,43 +1,37 @@
 class PythonPygtkFormula < Formula
   homepage "http://pygtk.org/"
-  url "http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.10/pygtk-2.10.6.tar.bz2"
+
+  supported_build_names "python2.7"
+
+  concern for_version("2.10.6") do
+    included do
+      url "http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.10/pygtk-2.10.6.tar.bz2"
+    end
+  end
+
+  concern for_version("2.17.0") do
+    included do
+      url "http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.17/pygtk-2.17.0.tar.bz2"
+      sha256 "6a61817a2e765c6209c72ecdf44389ec134c1ebed1d842408bf001c9321f1400"
+    end
+  end
+
+  params pygobject_module_name: "python_pygobject",
+         pycairo_module_name:   "python_pycairo"
 
   depends_on do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.2", "python_pygobject" ]
-    when /python2.7/
-      [ "python/2.7.5", "python_pygobject", "python_pycairo" ]
-    end
+    [ python_module_from_build_name,  pygobject_module_name, pycairo_module_name ]
   end
 
-  modules do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.2", "python_pygobject" ]
-    when /python2.7/
-      [ "python/2.7.5", "python_pygobject", "python_pycairo" ]
-    end
+  module_commands do
+    ["unload python", "load #{python_module_from_build_name}",
+     "load #{pygobject_module_name}", "load #{pycairo_module_name}"]
   end
-
 
   def install
     module_list
 
-    python_binary = "python"
-    libdirs = []
-    case build_name
-    when /python3.3/
-      python_binary = "python3.3"
-      libdirs << "#{prefix}/lib/python3.3/site-packages"
-      libdirs << "#{python_pygobject.prefix}/lib/python3.3/site-packages"
-    when /python2.7/
-      libdirs << "#{prefix}/lib/python2.7/site-packages"
-      libdirs << "#{python_pygobject.prefix}/lib/python2.7/site-packages"
-    end
-    FileUtils.mkdir_p libdirs.first
-
-    system "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} ./configure --prefix=#{prefix} && make && make install"
+    system "./configure --prefix=#{prefix} && make && make install"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -50,14 +44,10 @@ class PythonPygtkFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
+    module load python_pygobject
+    module load python_pycairo
 
-    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
-      set BUILD python3.3
-      set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7
-      set LIBDIR python2.7
-    }
+    <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
     prepend-path PATH            $PREFIX/bin

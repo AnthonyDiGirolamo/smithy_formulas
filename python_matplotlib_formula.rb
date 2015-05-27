@@ -1,7 +1,7 @@
 class PythonMatplotlibFormula < Formula
   homepage "http://matplotlib.org/"
 
-  supported_build_names /python.*_numpy.*/
+  supported_build_names /python.*numpy.*gnu.*/
 
   concern for_version("1.4.3") do
     included do
@@ -22,7 +22,18 @@ class PythonMatplotlibFormula < Formula
 
   #chose not to build with [ "python_pygtk" ]
   module_commands do
-    ["unload python", "load #{python_module_from_build_name}", "load python_numpy", "load python_pygtk"]
+    pe = "PE-"
+    pe = "PrgEnv-" if cray_system?
+
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+    commands << "load #{pe}gnu"
+    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+    commands << "unload python"
+    commands << "load #{python_module_from_build_name}"
+    commands << "load python_numpy"
+    commands << "load python_pygtk"
+    commands << "load python_nose"
+    commands
   end
 
   def install
@@ -33,19 +44,19 @@ class PythonMatplotlibFormula < Formula
         f.write <<-EOF.strip_heredoc
 	  #Rename this file to setup.cfg to modify matplotlib's
 	  # build options.
-	  
+
 	  [egg_info]
-	  
+
 	  [directories]
 	  # Uncomment to override the default basedir in setupext.py.
 	  # This can be a single directory or a comma-delimited list of directories.
 	  #basedirlist = /usr
-	  
+
 	  [status]
 	  # To suppress display of the dependencies and their versions
 	  # at the top of the build log, uncomment the following line:
 	  #suppress = False
-	  
+
 	  [packages]
 	  # There are a number of subpackages of matplotlib that are considered
 	  # optional.  They are all installed by default, but they may be turned
@@ -54,7 +65,7 @@ class PythonMatplotlibFormula < Formula
 	  #tests = True
 	  #sample_data = True
 	  #toolkits = True
-	  
+
 	  [gui_support]
 	  # Matplotlib supports multiple GUI toolkits, including Cocoa,
 	  # GTK, Fltk, MacOSX, Qt, Qt4, Tk, and WX. Support for many of
@@ -87,14 +98,14 @@ class PythonMatplotlibFormula < Formula
 	  #           otherwise skip silently. This is the default
 	  #           behavior
 	  #
-	  #gtk = True
+	  gtk = True
 	  #gtkagg = auto
 	  #tkagg = auto
 	  #macosx = auto
 	  #windowing = auto
-	  #gtk3cairo = auto
-	  #gtk3agg = auto
-	  
+	  gtk3cairo = False
+	  gtk3agg = False
+
 	  [rc_options]
 	  # User-configurable options
 	  #
@@ -106,7 +117,7 @@ class PythonMatplotlibFormula < Formula
 	  # if you have disabled the relevent extension modules.  Agg will be used
 	  # by default.
 	  #
-	  #backend = Agg
+	  backend = GTK
 	  #
         EOF
       end
@@ -125,6 +136,7 @@ class PythonMatplotlibFormula < Formula
 
     prereq python
     module load python_numpy
+    module load python_pygtk
     prereq python_numpy
 
     <%= python_module_build_list @package, @builds %>
