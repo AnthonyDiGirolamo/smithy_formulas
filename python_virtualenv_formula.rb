@@ -1,7 +1,7 @@
 class PythonVirtualenvFormula < Formula
   homepage "https://virtualenv.pypa.io/"
-  url "https://pypi.python.org/packages/source/v/virtualenv/virtualenv-12.0.7.tar.gz"
-  md5 "e08796f79d112f3bfa6653cc10840114"
+  url "https://pypi.python.org/packages/source/v/virtualenv/virtualenv-13.0.1.tar.gz"
+  md5 "1ffc011bde6667f0e37ecd976f4934db"
 
   supported_build_names "python2.7", "python3"
 
