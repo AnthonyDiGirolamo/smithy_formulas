@@ -3,24 +3,24 @@ class PythonMpi4pyFormula < Formula
   url "https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-1.3.1.tar.gz"
   sha1 "083a4a9b6793dfdbd852082d8b95da08bcf57290"
 
+  additional_software_roots [ config_value("lustre-software-root")[hostname] ]
+
   supported_build_names "python2.7", "python3"
 
   depends_on do
-    build_name_python
+    [ python_module_from_build_name ]
   end
 
   module_commands do
-    m = []
-    if module_is_available?("PrgEnv-gnu")
-      m << "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel"
-      m << "load PrgEnv-gnu"
-    else
-      m << "unload PE-gnu PE-pgi PE-intel"
-      m << "load PE-gnu"
-    end
-    m << "unload python"
-    m << "load #{build_name_python}"
-    m
+    pe = "PE-"
+    pe = "PrgEnv-" if cray_system?
+
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+    commands << "load #{pe}gnu"
+    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+    commands << "unload python"
+    commands << "load #{python_module_from_build_name}"
+    commands
   end
 
   def install
@@ -73,8 +73,5 @@ class PythonMpi4pyFormula < Formula
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path LD_LIBRARY_PATH $PREFIX/lib64
-    prepend-path MANPATH         $PREFIX/share/man
-    prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
-    prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
 end

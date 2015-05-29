@@ -1,34 +1,27 @@
-class PythonCythonFormula < Formula
-  homepage "http://cython.org/"
+class PythonScipyFormula < Formula
+  # Testing yaml:
+  # module load python 
+  # python setup.py test
+
+  homepage "https://pypi.python.org/pypi/PyYAM"
+  url "http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz"
   additional_software_roots [ config_value("lustre-software-root")[hostname] ]
 
   supported_build_names "python2.7", "python3"
 
-  concern for_version("0.22") do
-    included do
-      url "https://pypi.python.org/packages/source/C/Cython/cython-0.22.tar.gz"
-      md5 "1ae25add4ef7b63ee9b4af697300d6b6"
-    end
-  end
-
   depends_on do
-    python_module_from_build_name
+     [python_module_from_build_name,"python_setuptools/*/*#{python_version_from_build_name}*"]  
   end
 
   module_commands do
-    pe = "PE-"
-    pe = "PrgEnv-" if cray_system?
-
-    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
-    commands << "load #{pe}gnu"
-    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
-    commands << "unload python"
-    commands << "load #{python_module_from_build_name}"
-    commands
+    ["unload python", "load #{python_module_from_build_name}"]
   end
+
+
 
   def install
     module_list
+
     system_python "setup.py build"
     system_python "setup.py install --prefix=#{prefix} --compile"
   end
@@ -43,7 +36,6 @@ class PythonCythonFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
-    prereq PrgEnv-gnu PE-gnu
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
@@ -56,3 +48,4 @@ class PythonCythonFormula < Formula
     prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
   MODULEFILE
 end
+
