@@ -3,7 +3,7 @@ class PythonVirtualenvFormula < Formula
   url "https://pypi.python.org/packages/source/v/virtualenv/virtualenv-13.0.1.tar.gz"
   md5 "1ffc011bde6667f0e37ecd976f4934db"
 
-  supported_build_names "python2.7", "python3"
+  supported_build_names /python2.6/, /python2.7/, /python3/
 
   depends_on do
     python_module_from_build_name
@@ -32,6 +32,7 @@ class PythonVirtualenvFormula < Formula
 
     prereq python
     prereq python_setuptools
+    prereq python_pip
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD

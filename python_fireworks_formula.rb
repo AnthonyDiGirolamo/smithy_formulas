@@ -3,25 +3,17 @@ class PythonFireworksFormula < Formula
   url "https://github.com/materialsproject/fireworks/archive/v1.04.tar.gz"
   md5  "c34efc9ff2880bd23f5603e5aabed84b"
 
-  supported_build_names "python2.7.9"
+  supported_build_names /python2.7/, /python3/
 
   depends_on do
     python_module_from_build_name
   end
 
-  module_commands do
-    m = []
-    if module_is_available?("PrgEnv-gnu")
-      m << "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel"
-      m << "load PrgEnv-gnu"
-    else
-      m << "unload PE-gnu PE-pgi PE-intel"
-      m << "load PE-gnu"
-    end
-    m << "unload python"
-    m << "load #{python_module_from_build_name}"
-    m << "load python_setuptools"
-    m
+  modules do
+    mods = []
+    mods << python_module_from_build_name
+    mods << "python_setuptools"
+    mods
   end
 
   def install
