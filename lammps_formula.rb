@@ -99,10 +99,6 @@ class LammpsFormula < Formula
 
     Dir.chdir prefix + "/source/src"
     system "make no-all clean-all"
-    #system "make yes-std yes-asphere yes-body yes-class2 yes-colloid yes-dipole yes-fld"
-    #system "make yes-granular no-kim no-kokkos yes-kspace yes-manybody yes-mc yes-meam yes-misc"
-    #system "make yes-molecule yes-opt no-poems yes-reax yes-replica yes-rigid yes-shock"
-    #system "make yes-srd no-voronoi yes-user-cg-cmm yes-user-misc"
     system "make yes-std no-kim yes-meam no-poems yes-reax no-kokkos no-voronoi yes-gpu yes-kspace yes-molecule yes-rigid yes-colloid yes-manybody yes-misc"
     system "make -j8 titan"
 
