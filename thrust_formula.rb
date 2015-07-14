@@ -25,7 +25,7 @@ class ThrustFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    setenv THRUST_INCLUDE <%= @package.prefix %>/source
+    setenv THRUST_INCLUDE <%= @package.prefix %>/source/thrust
 
   MODULEFILE
 end
