@@ -1,10 +1,8 @@
 class MagmaFormula < Formula
   homepage "http://icl.cs.utk.edu/magma/index.html"
-  url "http://icl.cs.utk.edu/projectsfiles/magma/pubs/magma-1.3.0.tar.gz"
+  url "http://icl.cs.utk.edu/projectsfiles/magma/downloads/magma-1.6.2.tar.gz"
 
-  depends_on ["cblas/20110120/cle4.0_gnu4.7.2_acml5.2.0"]
-
-  modules ["PrgEnv-gnu", "cudatoolkit"]
+  module_commands ["switch PrgEnv-pgi PrgEnv-gnu", "load cudatoolkit", "load acml"]
 
   def install
     module_list
@@ -16,25 +14,57 @@ class MagmaFormula < Formula
       --- /dev/null
       +++ b/make.inc
       @@ -0,0 +1,16 @@
-      +GPU_TARGET = Fermi
-      +CC        = gcc -DCUBLAS_GFORTRAN
-      +NVCC      = nvcc
-      +FORT      = gfortran -DCUBLAS_GFORTRAN
+      +GPU_TARGET = Kepler
+      +CC        = cc -DCUBLAS_GFORTRAN
+      +CXX       = CC -DCUBLAS_GFORTRAN
+      +NVCC      = nvcc -Xcompiler -fPIC
+      +FORT      = ftn -DCUBLAS_GFORTRAN
       +ARCH      = ar
       +ARCHFLAGS = cr
       +RANLIB    = ranlib
       +OPTS      = -O3 -DADD_ -fPIC
-      +F77OPTS   = -O3 -DADD_ -fno-second-underscore
-      +FOPTS     = -O3 -DADD_ -fno-second-underscore
+      +F77OPTS   = -O3 -DADD_ -fno-second-underscore -fPIC
+      +FOPTS     = -O3 -DADD_ -fno-second-underscore -fPIC
       +NVOPTS    = -O3 -DADD_ --compiler-options -fno-strict-aliasing -DUNIX
-      +LDOPTS    = -fPIC -Xlinker -zmuldefs
-      +LIB       = -lacml -lpthread -lcublas -lm -lcblas
+      +LDOPTS    = -fPIC -Xlinker -zmuldefs -L$(CRAY_CUDATOOLKIT_DIR)/lib64 -L$(CRAY_CUDATOOLKIT_DIR)/extras/CUPTI/lib64 -Wl,--as-needed -Wl,-lcupti -Wl,-lcudart -Wl,--no-as-needed -L/opt/cray/nvidia/default/lib64 -lcuda
+      +LIB       =  -lpthread -lcublas -lm -lcupti -lcudart
       +CUDADIR   = $(CRAY_CUDATOOLKIT_DIR)
-      +LIBDIR    = -L/opt/acml/5.2.0/gfortran64/lib/ -L/sw/xk6/cblas/20110120/cle4.0_gnu4.7.2_acml5.2.0/lib -L$(CUDADIR)/lib64
       +INC       = -I$(CUDADIR)/include
     EOF
 
-    system "make"
+    system "export LD_LIBRARY_PATH=/opt/acml/5.3.1/gfortran64/lib/:$LD_LIBRARY_PATH && make"
     system "cd #{prefix} && cp -rv source/include source/lib ./"
   end
+
+proc ModulesHelp { } {
+   puts stderr "magma 1.6.2"
+   puts stderr ""
+}
+  modulefile <<-modulefile.strip_heredoc
+    #%Module
+    proc moduleshelp { } {
+       puts stderr "<%= @package.name %> <%= @package.version %>"
+       puts stderr ""
+    }
+    # one line description
+    module-whatis "<%= @package.name %> <%= @package.version %>"
+
+    prereq cudatoolkit
+    conflict PrgEnv-pathscale PrgEnv-cray PrgEnv-intel
+
+    set PREFIX <%= @package.prefix %>
+
+    prepend-path LD_LIBRARY_PATH  $PREFIX/lib
+    prepend-path LIBRARY_PATH     $PREFIX/lib
+    prepend-path INCLUDE_PATH     $PREFIX/include
+
+    set MAGMALIB "-L$PREFIX/lib -lmagma -lmagmablas -lcublas"
+    prepend-path MAGMA_LIB $MAGMALIB
+    set MAGMAINC "-I$PREFIX/include"
+    prepend-path MAGMA_INC $MAGMAINC
+
+    setenv       MAGMA_POST_COMPILE_OPTS $MAGMAINC
+    setenv       MAGMA_POST_LINK_OPTS    $MAGMALIB
+    append-path  PE_PRODUCT_LIST         MAGMA
+  modulefile
 end
