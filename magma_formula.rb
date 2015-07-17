@@ -1,4 +1,4 @@
-class MagmaIntelFormula < Formula
+class MagmaFormula < Formula
   homepage "http://icl.cs.utk.edu/magma/index.html"
   url "http://icl.cs.utk.edu/projectsfiles/magma/downloads/magma-1.6.2.tar.gz"
 
