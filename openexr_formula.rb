@@ -1,11 +1,9 @@
-class Bzip2Formula < Formula
-  homepage "http://www.bzip.org/"
-  url "http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz"
+class OpenexrFormula < Formula
+  homepage "http://www.openexr.org/"
+  url "http://download.savannah.nongnu.org/releases/openexr/openexr-2.2.0.tar.gz"
   modules do
     case build_name
-    when /gnu/   then ["gcc"]
-    when /pgi/   then ["pgi"]
-    when /intel/ then ["intel"]
+    when /gnu/   then ["gcc", "ilmbase"]
     end
   end
 
@@ -14,15 +12,8 @@ class Bzip2Formula < Formula
     case build_name
     when /gnu/
       cc = "gcc"
-    when /intel/
-      cc = "icc"
-    when /pgi/
-      cc = "pgcc -noswitcherror"
-    else
-      cc = "gcc"
     end
-    system "make CC='#{cc}'"
-    system "make install PREFIX=#{prefix}"
+    system "cmake -DILMBASE_PACKAGE_PREFIX=$ILM_PREFIX -DCMAKE_INSTALL_PREFIX=#{prefix}; make install"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
