@@ -24,4 +24,18 @@ class Bzip2Formula < Formula
     system "make CC='#{cc}'"
     system "make install PREFIX=#{prefix}"
   end
+
+  modulefile <<-MODULEFILE.strip_heredoc
+    #%Module
+    proc ModulesHelp { } {
+      puts stderr "<%= @package.name %> <%= @package.version %>"
+      puts stderr ""
+    }
+    module-whatis "<%= @package.name %> <%= @package.version %>"
+    set PREFIX <%= @package.prefix %>
+    prepend-path PATH      $PREFIX/bin
+    prepend-path PERL5LIB  $PREFIX/lib64/perl5/site_perl
+    prepend-path MANPATH   $PREFIX/share/man
+    setenv       GITDIR    $PREFIX
+    MODULEFILE
 end
