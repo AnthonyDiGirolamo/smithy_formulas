@@ -5,11 +5,15 @@ class NcviewFormula < Formula
   module_commands do
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+    cdf = "netcdf"
+    cdf = "cray-netcdf" if cray_system? 
+    hdf = "hdf5"
+    hdf = "cray-hdf5" if cray_system?
 
     [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel",
       "load #{pe}gnu",
-      "load cray-hdf5",
-      "load cray-netcdf" ]
+      "load #{hdf}",
+      "load #{cdf}" ]
   end
 
   depends_on [ "udunits/*/*gnu*" ]
