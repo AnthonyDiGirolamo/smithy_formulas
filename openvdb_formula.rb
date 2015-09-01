@@ -33,6 +33,24 @@ class OpenvdbFormula < Formula
     system "module show boost"
     system "mkdir #{prefix}/openvdb; cp -r #{prefix}/source/* #{prefix}/openvdb"
     system "cd #{prefix}/openvdb; make DESTDIR=#{prefix} CPLUS_INCLUDE_PATH=#{ilm_prefix}/include/OpenEXR:$CPLUS_INCLUDE_PATH EXR_LIB='-lIlmImf-2_2' BOOST_INCL_DIR=#{boost_root}/include BOOST_LIB_DIR=#{boost_root}/lib EXR_LIB_DIR=#{exr_path}/lib EXR_INCL_DIR=#{exr_path}/include ILMBASE_INCL_DIR=#{ilm_prefix}/include ILMBASE_LIB='-lIlmThread-2_2 -lIex-2_2 -lImath-2_2' ILMBASE_LIB_DIR=#{ilm_prefix}/lib TBB_LIB_DIR=#{tbb_lib_path} TBB_INCL_DIR=#{tbb_path}/include CONCURRENT_MALLOC_LIB='-ltbbmalloc' PYTHON_VERSION='' CPPUNIT_INCL_DIR='' LOG4CPLUS_INCL_DIR='' GLFW_INCL_DIR='' install"
+
+    # Create pkg-config file as one is not distrubted with OpenVDB
+    system "mkdir #{prefix}/lib/pkgconfig"
+    File.open("#{prefix}/lib/pkgconfig/openvdb.pc", "w+") do |f|
+      f.write <<-EOF.strip_heredoc
+        openvdb.pc:
+        prefix=#{prefix}
+        exec_prefix=${prefix}
+        includedir=${prefix}/include
+        libdir=${exec_prefix}/lib
+
+        Name: #{package.name}
+        Description: OpenVDB development library
+        Version: #{package.version}
+        Cflags: -I${includedir}
+        Libs: -L${libdir} -lopenvdb
+      EOF
+    end
   end 
 
   #-----------------------------------------------------
