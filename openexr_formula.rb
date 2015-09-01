@@ -24,6 +24,7 @@ class OpenexrFormula < Formula
     }
     module-whatis "<%= @package.name %> <%= @package.version %>"
     set PREFIX <%= @package.prefix %>
+    setenv EXR_PATH $PREFIX
     prepend-path PATH      $PREFIX/bin
     prepend-path MANPATH   $PREFIX/share/man
     MODULEFILE
