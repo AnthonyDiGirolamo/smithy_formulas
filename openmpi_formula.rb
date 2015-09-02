@@ -9,7 +9,7 @@ class OpenmpiFormula < Formula
     end
   end
 
-  concern for_version("1.10.0-mtm") do
+  concern for_version("1.10.0_mtm") do
     included do
       url  "http://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.0.tar.gz"
       md5  "10e097bfaca8ed625781af0314797b90"
@@ -25,7 +25,7 @@ class OpenmpiFormula < Formula
     end
   end
 
-  concern for_version("1.8.8-mtm") do
+  concern for_version("1.8.8_mtm") do
     included do
       url  "http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.8.tar.gz"
       md5  "88f2f6bf4a95df63a95d31cf31c20ebb"
@@ -41,7 +41,7 @@ class OpenmpiFormula < Formula
     end
   end
 
-  concern for_version("1.8.4-mtm") do
+  concern for_version("1.8.4_mtm") do
     included do
       url  "file:///sw/rhea/openmpi/1.8.4/openmpi-1.8.4.tar.gz"
       md5  "5bfd54d7fa54fa84c42ae6e297efc7b6"
