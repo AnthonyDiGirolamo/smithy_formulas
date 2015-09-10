@@ -19,6 +19,7 @@ class Wgrib2Formula < Formula
 			system "rm -rf #{target_dir}"
 			system "cp -R #{dir} #{target_dir}"
 		end
+		system "cp wgrib2/wgrib2 #{prefix}/bin"
 	end
 
 	modulefile do
