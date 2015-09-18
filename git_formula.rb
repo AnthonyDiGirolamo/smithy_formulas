@@ -4,6 +4,8 @@ class GitFormula < Formula
   sha256 "33b2f07f38d2c3e11d9b1575b6529f3081ea66dae7fa1c6d8a7b77ad38d2543a"
   depends_on ["curl/7.39.0","zlib"]
 
+  module_commands ["unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu PE-pgi PE-intel PE-gnu"]
+
   def install
     module_list
     system "make configure"
