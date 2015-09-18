@@ -2,7 +2,7 @@ class GitFormula < Formula
   homepage "https://git-core.googlecode.com/"
   url "https://github.com/git/git/archive/v2.4.6.tar.gz"
   sha256 "33b2f07f38d2c3e11d9b1575b6529f3081ea66dae7fa1c6d8a7b77ad38d2543a"
-  depends_on ["curl/7.39.0","zlib"]
+  depends_on ["curl/7.39.0","zlib/1.2.8"]
 
   module_commands ["unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu PE-pgi PE-intel PE-gnu"]
 
