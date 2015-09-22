@@ -4,6 +4,12 @@ class LammpsFormula < Formula
 
   # Recent Changes Page: http://lammps.sandia.gov/bug.html
   # See https://github.com/lammps/lammps/commits/master for svn version numbers
+  concern for_version("15May2015_reaxc") do
+    included do
+      params svn_url: "svn://svn.icms.temple.edu/lammps-ro/trunk@13475"
+    end
+  end
+
   concern for_version("15May2015") do
     included do
       params svn_url: "svn://svn.icms.temple.edu/lammps-ro/trunk@13475"
@@ -99,7 +105,7 @@ class LammpsFormula < Formula
 
     Dir.chdir prefix + "/source/src"
     system "make no-all clean-all"
-    system "make yes-std no-kim yes-meam no-poems yes-reax no-kokkos no-voronoi yes-gpu yes-kspace yes-molecule yes-rigid yes-colloid yes-manybody yes-misc"
+    system "make yes-std no-kim yes-meam no-poems yes-reax no-kokkos no-voronoi yes-gpu yes-kspace yes-molecule yes-rigid yes-colloid yes-manybody yes-misc yes-user-reaxc"
     system "make -j8 titan"
 
     system "mkdir -p #{prefix}/bin"
