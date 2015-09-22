@@ -1,6 +1,6 @@
 class MesaFormula < Formula
   homepage "www.mesa3d.org"
-  url "ftp://ftp.freedesktop.org/pub/mesa/older-versions/8.x/8.0.5/MesaLib-8.0.5.tar.gz"
+  url "ftp://ftp.freedesktop.org/pub/mesa/10.5.4/mesa-10.5.4.tar.gz"
 
   #-----------------------------------------------------
   # Commnads to have the correct module environment.   -
@@ -19,8 +19,7 @@ class MesaFormula < Formula
     # Commands to build the library.                     -
     #                                                    -
     #-----------------------------------------------------
-    system "make clean"
-    system "./configure --prefix=#{prefix} --without-gallium-drivers --disable-dri --enable-xlib-glx"
+    system "./configure --prefix=#{prefix} --without-gallium-drivers --disable-dri --enable-xlib-glx --enable-osmesa"
     system "make"
     system "make install"
   end 
@@ -52,6 +51,7 @@ class MesaFormula < Formula
       <% end %>
 
       setenv MESA_DIR $PREFIX
+      setenv OSMESA_ROOT $PREFIX
       prepend-path LD_LIBRARY_PATH $PREFIX/lib
       prepend-path CPATH $PREFIX/include
       prepend-path CPLUS_INCLUDE_PATH $PREFIX/include
