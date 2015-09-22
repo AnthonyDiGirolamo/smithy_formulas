@@ -65,5 +65,7 @@ class PythonNetcdf4Formula < Formula
     prepend-path PATH            /opt$PREFIX/bin
     prepend-path PYTHONPATH      /opt$PREFIX/lib/$LIBDIR/site-packages
     prepend-path PYTHONPATH      /opt$PREFIX/lib64/$LIBDIR/site-packages
+
+    prepend-path LD_LIBRARY_PATH /opt/cray/lib64
   MODULEFILE
 end

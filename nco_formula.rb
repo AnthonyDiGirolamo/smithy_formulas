@@ -1,7 +1,19 @@
 class NcoFormula < Formula
   homepage "http://nco.sourceforge.net/"
-  url "http://nco.sourceforge.net/src/nco-4.3.9.tar.gz"
-  md5 "8f50e8b3fcec77e568d48ba452b69c47"
+
+  concern for_version "4.0.8" do
+    included do
+      url "http://nco.sourceforge.net/src/nco-4.0.8.tar.gz"
+      md5 "edd1e5dab719b4bfc2cd07ec840f4f1d"
+    end
+  end
+
+  concern for_version "4.3.9" do
+    included do
+      url "http://nco.sourceforge.net/src/nco-4.3.9.tar.gz"
+      md5 "8f50e8b3fcec77e568d48ba452b69c47"
+    end
+  end
 
   module_commands do
     pe = "PE-"
