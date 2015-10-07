@@ -88,19 +88,22 @@ class LammpsFormula < Formula
     system "sed 's/CCFLAGS/CCFLAGS = -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.jaguar > src/MAKE/MACHINES/Makefile.titan"
     system "sed -i 's/LINKFLAGS/LINKFLAGS = -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.titan"
 
-    patch <<-EOF.strip_heredoc
-      --- a/lib/reax/reax_defs.h
-      +++ b/lib/reax/reax_defs.h
-      @@ -44,7 +44,7 @@
-       #define NATDEF 40000
-       #define NATTOTDEF 39744
-       #define NSORTDEF 20
-      -#define MBONDDEF 20
-      +#define MBONDDEF 40
-       #define NAVIBDEF 50
-       #define NBOTYMDEF 200
-       #define NVATYMDEF 200
-    EOF
+    if version.include("15May2015_reaxc")
+      system "svn revert lib/reax/reax_defs.h"
+      patch <<-EOF.strip_heredoc
+        --- a/lib/reax/reax_defs.h
+        +++ b/lib/reax/reax_defs.h
+        @@ -44,7 +44,7 @@
+         #define NATDEF 40000
+         #define NATTOTDEF 39744
+         #define NSORTDEF 20
+        -#define MBONDDEF 20
+        +#define MBONDDEF 120
+         #define NAVIBDEF 50
+         #define NBOTYMDEF 200
+         #define NVATYMDEF 200
+      EOF
+    end
 
     Dir.chdir prefix + "/source/lib/gpu"
     system "make -j8 -f Makefile.xk7 clean"
