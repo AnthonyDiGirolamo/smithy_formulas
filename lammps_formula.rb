@@ -88,7 +88,7 @@ class LammpsFormula < Formula
     system "sed 's/CCFLAGS/CCFLAGS = -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.jaguar > src/MAKE/MACHINES/Makefile.titan"
     system "sed -i 's/LINKFLAGS/LINKFLAGS = -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.titan"
 
-    if version.include("15May2015_reaxc")
+    if version =~ /15May2015_reaxc/
       system "svn revert lib/reax/reax_defs.h"
       patch <<-EOF.strip_heredoc
         --- a/lib/reax/reax_defs.h
@@ -98,7 +98,7 @@ class LammpsFormula < Formula
          #define NATTOTDEF 39744
          #define NSORTDEF 20
         -#define MBONDDEF 20
-        +#define MBONDDEF 120
+        +#define MBONDDEF 40
          #define NAVIBDEF 50
          #define NBOTYMDEF 200
          #define NVATYMDEF 200
