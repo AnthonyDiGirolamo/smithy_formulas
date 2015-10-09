@@ -81,13 +81,9 @@ class LammpsFormula < Formula
   def install
     module_list
     system "svn co #{svn_url} source" unless Dir.exists?("source")
-
     Dir.chdir prefix+"/source"
 
-    system "svn revert src/MAKE/MACHINES/Makefile.jaguar"
-    system "sed 's/CCFLAGS/CCFLAGS = -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.jaguar > src/MAKE/MACHINES/Makefile.titan"
-    system "sed -i 's/LINKFLAGS/LINKFLAGS = -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.titan"
-
+    # Special case for reaxc build/RT268132
     if version =~ /15May2015_reaxc/
       system "svn revert lib/reax/reax_defs.h"
       patch <<-EOF.strip_heredoc
@@ -105,6 +101,22 @@ class LammpsFormula < Formula
       EOF
     end
 
+    # The executable should be named lmp_${target_arch} on each machine.
+    target_arch="exe"
+    case arch
+    when /xk7/, /xk6/
+      target_arch="titan"
+    when /xc30/
+      target_arch="eos"
+    end
+
+    system "svn revert src/MAKE/MACHINES/Makefile.jaguar"
+    system "cp src/MAKE/MACHINES/Makefile.jaguar src/MAKE/MACHINES/Makefile.#{target_arch}"
+    system "sed 's/\\(CCFLAGS.*\\=.*\\)/\\1 -craype-verbose -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.jaguar > src/MAKE/MACHINES/Makefile.#{target_arch}"
+    system "sed -i 's/\\(LINKFLAGS.*\\=.*\\)/\\1 -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.#{target_arch}"
+
+    # No GPUS on xc30: This segment does not make sense for eos, though compiler
+    # wrappers appear to handle build correctly anyway.
     Dir.chdir prefix + "/source/lib/gpu"
     system "make -j8 -f Makefile.xk7 clean"
     system "make -j8 -f Makefile.xk7"
@@ -122,7 +134,7 @@ class LammpsFormula < Formula
     Dir.chdir prefix + "/source/src"
     system "make no-all clean-all"
     system "make yes-std no-kim yes-meam no-poems yes-reax no-kokkos no-voronoi yes-gpu yes-kspace yes-molecule yes-rigid yes-colloid yes-manybody yes-misc yes-user-reaxc"
-    system "make -j8 titan"
+    system "make -j8 #{target_arch}"
 
     system "mkdir -p #{prefix}/bin"
     system "cp #{prefix}/source/src/lmp_* #{prefix}/bin/"
