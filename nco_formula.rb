@@ -15,14 +15,22 @@ class NcoFormula < Formula
     end
   end
 
+  concern for_version "4.5.2" do
+    included do
+      url "http://nco.sourceforge.net/src/nco-4.5.2.tar.gz"
+      md5 "b2be3d112da617cd2eeec232e055b86b"
+    end
+  end
+
   module_commands do
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+    prfx = module_is_available?("PrgEnv-gnu") ? "cray-" : ""
 
     [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel",
       "load #{pe}gnu",
-      "load netcdf",
-      "load hdf5",
+      "load #{prfx}netcdf",
+      "load #{prfx}hdf5",
       "load gsl",
       "load udunits",
       "load java" ]

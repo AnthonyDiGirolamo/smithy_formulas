@@ -1,7 +1,7 @@
 class SerfFormula < Formula
   homepage "https://code.google.com/p/serf/"
-  url "https://serf.googlecode.com/files/serf-1.3.2.tar.bz2"
-  sha1 "90478cd60d4349c07326cb9c5b720438cf9a1b5d"
+  url "https://archive.apache.org/dist/serf/serf-1.3.8.tar.bz2"
+  sha1 "1d45425ca324336ce2f4ae7d7b4cfbc5567c5446"
   depends_on ["scons","apr","apr-util","expat"]
   module_commands ["purge","load scons"]
 
@@ -11,4 +11,18 @@ class SerfFormula < Formula
 #    system "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:#{apr_util.prefix}/lib:#{apr.prefix}/lib scons check"
     system "scons install"
   end
+
+  modulefile <<-MODULEFILE.strip_heredoc
+    #%Module
+    proc ModulesHelp { } {
+       puts stderr "<%= @package.name %> <%= @package.version %>"
+       puts stderr ""
+    }
+    module-whatis "<%= @package.name %> <%= @package.version %>"
+
+    set PREFIX <%= @package.prefix %>
+
+    prepend-path PATH      $PREFIX/bin
+    prepend-path MANPATH   $PREFIX/share/man
+  MODULEFILE
 end

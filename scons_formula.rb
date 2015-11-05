@@ -7,7 +7,7 @@ class SconsFormula < Formula
     when /python3.3/
       [ "python/3.3.0" ]
     when /python2.7/
-      [ "python/2.7.3" ]
+      [ "python/2.7.9" ]
     end
   end
 
@@ -16,7 +16,7 @@ class SconsFormula < Formula
     when /python3.3/
       [ "python/3.3.0" ]
     when /python2.7/
-      [ "python/2.7.3" ]
+      [ "python/2.7.9" ]
     end
   end
 
@@ -49,8 +49,8 @@ class SconsFormula < Formula
 
     if [ is-loaded python/3.3.0 ] {
       set BUILD python3.3.0
-    } elseif { [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7.3
+    } elseif { [ is-loaded python/2.7.9 ] } {
+      set BUILD python2.7.9
     } else {
       set BUILD python2.6.8
     }
