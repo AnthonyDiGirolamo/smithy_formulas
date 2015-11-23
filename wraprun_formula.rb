@@ -1,6 +1,6 @@
 class WraprunFormula < Formula
   homepage "https://github.com/olcf/wraprun"
-  url "https://github.com/olcf/wraprun/archive/v0.1.2.tar.gz"
+  url "https://github.com/olcf/wraprun/archive/v0.1.10.tar.gz"
 
   concern for_version("dev") do
     included do
@@ -91,6 +91,10 @@ class WraprunFormula < Formula
     module load dynamic-link
 
     setenv W_UNSET_PRELOAD 1 
+    setenv W_IGNORE_SEGV 1
+    setenv W_IGNORE_RETURN_CODE 1
+    setenv W_IGNORE_ABRT 1
+    setenv W_SIG_DFL 1
 
     <% if @builds.size > 1 %>
     <%= module_build_list @package, @builds %>
@@ -101,6 +105,7 @@ class WraprunFormula < Formula
     <% end %>
 
     prepend-path PATH             $PREFIX/bin
+    prepend-path PYTHONPATH       $PREFIX/lib/python2.7/site-packages
     prepend-path LD_LIBRARY_PATH  $PREFIX/lib
 
     # The libfmpich library is suffixed with the PE name, so we must extract it
