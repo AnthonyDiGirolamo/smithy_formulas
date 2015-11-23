@@ -16,6 +16,13 @@ class PythonPipFormula < Formula
     end
   end
 
+  concern for_version("7.1.2") do
+    included do
+      url "https://pypi.python.org/packages/source/p/pip/pip-7.1.2.tar.gz"
+      md5 "3823d2343d9f3aaab21cf9c917710196"
+    end
+  end
+
   depends_on do
     [ python_module_from_build_name,
       "python_setuptools/*/*#{python_version_from_build_name}" ]
