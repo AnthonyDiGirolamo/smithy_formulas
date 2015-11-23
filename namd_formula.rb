@@ -1,6 +1,14 @@
 class NamdFormula < Formula
   homepage "https://www-s.ks.uiuc.edu/Research/namd/"
-  url "http://www.ks.uiuc.edu/Research/namd/2.10b1/download/832984/NAMD_2.10b1_Source.tar.gz"
+  url "http://www.ks.uiuc.edu/Research/namd/2.11b1/download/252174/NAMD_2.11b1_Source.tar.gz"
+  params charm: "charm-6.7.0-pre"
+
+  concern for_version("2.10b") do
+    included do
+      url "http://www.ks.uiuc.edu/Research/namd/2.10b1/download/832984/NAMD_2.10b1_Source.tar.gz"
+      params charm: "charm-6.6.0-rc4"
+    end
+  end
 
   module_commands do
     pe = "PE-"
@@ -22,7 +30,6 @@ class NamdFormula < Formula
 
     mpicxx = module_is_available?("PrgEnv-gnu") ? "CC" : "mpicxx"
     namd_arch = module_is_available?("PrgEnv-gnu") ? "CRAY-XE-gnu" : "Linux-x86_64-g++"
-    charm = "charm-6.6.0-rc4"
 
     # Charm++
     system "rm -rf #{charm} ; tar xf #{charm}.tar"
@@ -43,8 +50,8 @@ class NamdFormula < Formula
     Dir.chdir namd_arch
     system "make"
     system "make release"
-    system "mv NAMD_2.10b1_CRAY-XE-ugni-smp-Titan-CUDA/lib ../../lib"
-    system "mv NAMD_2.10b1_CRAY-XE-ugni-smp-Titan-CUDA ../../bin"
+    system "mv NAMD_#{version}_CRAY-XE-ugni-smp-Titan-CUDA/lib ../../lib"
+    system "mv NAMD_#{version}_CRAY-XE-ugni-smp-Titan-CUDA ../../bin"
   end
 
   modulefile <<-EOF.strip_heredoc
