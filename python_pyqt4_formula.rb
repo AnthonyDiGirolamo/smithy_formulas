@@ -12,13 +12,18 @@ class PythonPyqt4Formula < Formula
   module_commands do
     ["unload python",
      "load #{python_module_from_build_name}",
+     "load qt4",
      "load sip"]
   end
 
   def install
     module_list
 
-    system_python "configure.py --prefix=#{prefix} && make && make install"
+    system_python "configure.py ",
+      "-b #{prefix}/bin ",
+      "-d #{prefix}/lib/$LIBDIR/site-packages "
+    system "make"
+    system "make install"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -31,6 +36,8 @@ class PythonPyqt4Formula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
+    module load qt4
+    prereq qt4
     module load sip
     prereq sip
 
@@ -38,5 +45,6 @@ class PythonPyqt4Formula < Formula
     set PREFIX <%= @package.version_directory %>/$BUILD
 
     prepend-path PATH            $PREFIX/bin
+    prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
   MODULEFILE
 end
