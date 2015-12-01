@@ -2,13 +2,13 @@ class SipFormula < Formula
   homepage "http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.tar.gz"
   url "http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.tar.gz"
 
-  supported_build_names /python2.7/
+  supported_build_names "python2.7.9"
 
   depends_on do
     python_module_from_build_name
   end
 
-  modules do
+  module_commands do
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
 
@@ -26,8 +26,8 @@ class SipFormula < Formula
     module_list
     system_python "configure.py ",
       "-b #{prefix}/bin ",
-      "-d #{prefix}/lib64/$LIBDIR/site-packages ",
-      "-e #{prefix}/include/$LIBDIR ",
+      "-d #{prefix}/lib/python2.7/site-packages ",
+      "-e #{prefix}/include/python2.7 ",
       "-v #{prefix}/share"
     system "make"
     system "make install"
@@ -43,14 +43,12 @@ class SipFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
-    module load sip
-    prereq sip
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
     prepend-path PATH            $PREFIX/bin
-    prepend-path PYTHONPATH      $PREFIX/lib64/$LIBDIR/site-packages
-    prepend-path INCLUDE_PATH    $PREFIX/include/$LIBDIR
+    prepend-path PYTHONPATH      $PREFIX/lib/python2.7/site-packages
+    prepend-path INCLUDE_PATH    $PREFIX/include/python2.7
   MODULEFILE
 end
