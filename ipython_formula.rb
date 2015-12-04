@@ -1,33 +1,30 @@
 class IpythonFormula < Formula
   homepage "http://ipython.org/"
-  url "https://github.com/ipython/ipython/releases/download/rel-1.1.0/ipython-1.1.0.tar.gz"
 
-  depends_on "python"
-
-  modules do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.2", "python_setuptools" ]
-    when /python2.7/
-      [ "python/2.7.5", "python_setuptools" ]
+  concern for_version("1.1.0") do
+    included do
+      url "https://github.com/ipython/ipython/releases/download/rel-1.1.0/ipython-1.1.0.tar.gz"
     end
+  end
+
+  concern for_version("3.0.0") do
+    included do
+      url "https://pypi.python.org/packages/source/i/ipython/ipython-3.0.0.tar.gz"
+      md5 "b3f00f3c0be036fafef3b0b9d663f27e"
+    end
+  end
+
+  depends_on do
+    python_module_from_build_name
+  end
+
+  module_commands do
+    ["unload python", "load #{python_module_from_build_name}"]
   end
 
   def install
     module_list
-
-    python_binary = "python"
-    libdirs = []
-    case build_name
-    when /python3.3/
-      python_binary = "python3.3"
-      libdirs << "#{prefix}/lib/python3.3/site-packages"
-    when /python2.7/
-      libdirs << "#{prefix}/lib/python2.7/site-packages"
-    end
-    FileUtils.mkdir_p libdirs.first
-
-    system "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{python_binary} setup.py install --prefix=#{prefix} --compile"
+    system_python "setup.py install --prefix=#{prefix} --compile"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -43,13 +40,7 @@ class IpythonFormula < Formula
     module load python_setuptools
     prereq python_setuptools
 
-    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
-      set BUILD python3.3
-      set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7
-      set LIBDIR python2.7
-    }
+    <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
     prepend-path PATH            $PREFIX/bin
