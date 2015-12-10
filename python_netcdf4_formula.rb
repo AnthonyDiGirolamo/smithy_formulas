@@ -8,6 +8,9 @@ class PythonNetcdf4Formula < Formula
   depends_on do
     python_module_from_build_name
   end
+  
+  params hdf5_module_name:   module_is_available?("cray-hdf5") ? "cray-hdf5" : "hdf5",
+         netcdf_module_name: module_is_available?("cray-netcdf") ? "cray-netcdf" : "netcdf"
 
   module_commands do
     pe = "PE-"
@@ -24,11 +27,11 @@ class PythonNetcdf4Formula < Formula
 
     commands << "load python_numpy"
 
-    commands << "load hdf5"
-    commands << "swap hdf5 hdf5/#{$1}" if build_name =~ /hdf5([\d\.]+)/
+    @hdf5_module_name = "#{$1}hdf5/#{$2}" if build_name =~ /(cray-)?hdf5([\d\.]+)/
+    commands << "load " + hdf5_module_name
 
-    commands << "load netcdf/4.1.3"
-    commands << "swap netcdf netcdf/#{$1}" if build_name =~ /netcdf([\d\.]+)/
+    @netcdf_module_name = "#{$1}netcdf/#{$2}" if build_name =~ /(cray-)?netcdf([\d\.]+)/
+    commands << "load " + netcdf_module_name
 
     commands
   end
@@ -36,6 +39,7 @@ class PythonNetcdf4Formula < Formula
   def install
     module_list
 
+    ENV["NETCDF4_DIR"] = module_environment_variable(netcdf_module_name, "NETCDF_DIR")
     system_python "setup.py build"
     system_python "setup.py install --prefix=#{prefix} --compile"
 #    system_python "cd test && #{python_start_command} run_all.py"
