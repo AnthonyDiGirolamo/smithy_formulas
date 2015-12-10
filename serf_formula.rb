@@ -3,7 +3,7 @@ class SerfFormula < Formula
   url "https://archive.apache.org/dist/serf/serf-1.3.8.tar.bz2"
   sha1 "1d45425ca324336ce2f4ae7d7b4cfbc5567c5446"
   depends_on ["scons","apr","apr-util","expat"]
-  module_commands ["purge","load scons"]
+  module_commands ["purge","load python","load scons"]
 
   def install
     module_list

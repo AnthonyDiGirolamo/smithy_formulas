@@ -26,11 +26,13 @@ class NcoFormula < Formula
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
     prfx = module_is_available?("PrgEnv-gnu") ? "cray-" : ""
+    netcdf_module = module_is_available?("cray-netcdf") ? "cray-netcdf" : "netcdf"
+    hdf5_module = module_is_available?("cray-hdf5") ? "cray-hdf5" : "hdf5"
 
     [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel",
       "load #{pe}gnu",
-      "load #{prfx}netcdf",
-      "load #{prfx}hdf5",
+      "load #{netcdf_module}",
+      "load #{hdf5_module}",
       "load gsl",
       "load udunits",
       "load java" ]
@@ -43,22 +45,7 @@ class NcoFormula < Formula
     ENV["CC"]      = "gcc"
     ENV["CXX"]     = "g++"
 
-    # ENV["CPPFLAGS"] = "-I#{expat.prefix}/include -I#{gsl.prefix}/include"
-    # ENV["LDFLAGS"] = [
-    #   "-L#{expat.prefix}/lib",
-    #   "-Wl,-rpath,#{expat.prefix}/lib",
-    #   "-Wl,-rpath,/opt/gcc/4.7.0/snos/lib64",
-    #   "-Wl,-rpath,/opt/cray/netcdf/4.2.0/gnu/47/lib",
-    #   "-Wl,-rpath,#{udunits.prefix}/lib",
-    #   "-Wl,-rpath,#{gsl.prefix}/lib"
-    # ].join(" ")
-
-    # cpp_flags = "-I#{expat.prefix}/include -I#{gsl.prefix}/include"
-    # ld_flags  = "-L#{expat.prefix}/lib -L#{gsl.prefix}/lib"
-
     system "UDUNITS2_PATH=#{udunits.prefix}",
-           # "CPPFLAGS='#{cpp_flags}'",
-           # "LDFLAGS='#{ld_flags}'",
            "HDF5_ROOT=$HDF5_DIR",
            "NETCDF4_ROOT=$NETCDF_DIR",
            "NETCDF_INC=$NETCDF_DIR/include",
