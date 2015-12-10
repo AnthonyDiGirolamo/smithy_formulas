@@ -4,44 +4,23 @@ class PythonNumexprFormula < Formula
   sha1 "021cbd31e6976164b4b956318b30630dabd16159"
 
   depends_on do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.2", "python_numpy/1.8.0/*python3.3*" ]
-    when /python2.7/
-      [ "python/2.7.5", "python_numpy/1.8.0/*python2.7*" ]
-    end
+    [ python_module_from_build_name ]
   end
 
-  modules do
-    case build_name
-    when /python3.3/
-      [ "python/3.3.2", "python_numpy/1.8.0", "gcc" ]
-    when /python2.7/
-      [ "python/2.7.5", "python_numpy/1.8.0", "gcc" ]
-    end
+  module_commands do
+    commands = ["unload python"]
+    commands << "load #{python_module_from_build_name}"
+    commands << "load python_numpy"
   end
 
   def install
     module_list
 
-    python_binary = "python"
-    libdirs = []
-    case build_name
-    when /python3.3/
-      python_binary = "python3.3"
-      libdirs << "#{prefix}/lib/python3.3/site-packages"
-    when /python2.7/
-      libdirs << "#{prefix}/lib/python2.7/site-packages"
-    end
-    FileUtils.mkdir_p libdirs.first
-
-    python_start_command = "PYTHONPATH=$PYTHONPATH:#{libdirs.join(":")} #{python_binary} "
-
-    system "#{python_start_command} setup.py build"
-    system "#{python_start_command} setup.py install --prefix=#{prefix} --compile"
+    system_python "setup.py build"
+    system_python "setup.py install --prefix=#{prefix} --compile"
   end
 
-  modulefile <<-MODULEFILE.strip_heredoc
+  modulefile <<-MODULEFILE
     #%Module
     proc ModulesHelp { } {
        puts stderr "<%= @package.name %> <%= @package.version %>"
@@ -53,13 +32,7 @@ class PythonNumexprFormula < Formula
     module load python_numpy
     prereq python_numpy
 
-    if { [ is-loaded python/3.3.0 ] || [ is-loaded python/3.3.2 ] } {
-      set BUILD python3.3
-      set LIBDIR python3.3
-    } elseif { [ is-loaded python/2.7.5 ] || [ is-loaded python/2.7.3 ] || [ is-loaded python/2.7.2 ] } {
-      set BUILD python2.7
-      set LIBDIR python2.7
-    }
+    <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
     prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages

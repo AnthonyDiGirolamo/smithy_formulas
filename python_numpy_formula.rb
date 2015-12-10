@@ -103,7 +103,6 @@ class PythonNumpyFormula < Formula
       # One line description
       module-whatis "<%= @package.name %> <%= @package.version %>"
 
-      prereq PrgEnv-gnu PE-gnu
       prereq python
       conflict python_numpy
 
@@ -120,7 +119,7 @@ class PythonNumpyFormula < Formula
       prepend-path PATH            $PREFIX/bin
       prepend-path LD_LIBRARY_PATH $PREFIX/lib
       prepend-path LD_LIBRARY_PATH $PREFIX/lib64
-      prepend-path LD_LIBRARY_PATH /opt/gcc/4.8.2/snos/lib64
+      prepend-path LD_LIBRARY_PATH /opt/gcc/default/snos/lib64
       prepend-path LD_LIBRARY_PATH /ccs/compilers/gcc/rhel6-x86_64/4.8.2/lib
       prepend-path LD_LIBRARY_PATH /ccs/compilers/gcc/rhel6-x86_64/4.8.2/lib64
       prepend-path MANPATH         $PREFIX/share/man
