@@ -3,10 +3,10 @@ class PythonSetuptoolsFormula < Formula
 
   supported_build_names "python2.7", "python3"
 
-  concern for_version("1.3") do
+  concern for_version("18.7.1") do
     included do
-      url "https://pypi.python.org/packages/source/s/setuptools/setuptools-1.3.tar.gz"
-      md5 "3d04753974306d8a13830008e17babca"
+      url "https://pypi.python.org/packages/source/s/setuptools/setuptools-18.7.1.tar.gz"
+      md5 "a0984da9cd8d7b582e1fd7de67dfdbcc"
     end
   end
 

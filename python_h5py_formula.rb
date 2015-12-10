@@ -5,7 +5,7 @@ class PythonH5pyFormula < Formula
 
   supported_build_names /python.*_hdf5.*/
 
-  params hdf5_module_name: cray_system? ? "cray-hdf5" : "hdf5"
+  params hdf5_module_name: module_is_available?("cray-hdf5") ? "cray-hdf5" : "hdf5"
 
   additional_software_roots [ config_value("lustre-software-root").fetch(Smithy::Config.hostname) ]
 
