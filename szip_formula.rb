@@ -1,7 +1,7 @@
 class SzipFormula < Formula
   homepage "http://www.hdfgroup.org/doc_resource/SZIP/"
   url      "http://www.hdfgroup.org/ftp/lib-external/szip/2.1/src/szip-2.1.tar.gz"
-  md5      "9229ef21fe4471281f0b632eb70376b1"
+  md5      "902f831bcefb69c6b635374424acbead"
 
   module_commands do
     pe = "PE-"

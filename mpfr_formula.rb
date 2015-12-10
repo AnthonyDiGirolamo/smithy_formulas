@@ -1,16 +1,13 @@
-class PcreFormula < Formula
-  homepage "http://www.pcre.org/"
-  url      "http://downloads.sourceforge.net/project/pcre/pcre/8.37/pcre-8.37.tar.bz2"
-  sha256   "51679ea8006ce31379fb0860e46dd86665d864b5020fc9cd19e71260eef4789d"
+class MpfrFormula < Formula
+  homepage "http://www.mpfr.org/"
+  url "http://www.mpfr.org/mpfr-current/mpfr-3.1.3.tar.bz2"
+  sha1 "3e46c5ce43701f2f36f9d01f407efe081700da80"
 
+  depends_on "gmp"
   def install
-    system "./configure",
-      "--disable-dependency-tracking",
-      "--prefix=#{prefix}",
-      "--enable-utf8",
-      "--enable-unicode-properties",
-      "--enable-pcregrep-libz"
-    system "make test"
+    module_list
+    system "./configure --prefix=#{prefix} --with-gmp=#{gmp.prefix}"
+    system "make"
     system "make install"
   end
   modulefile <<-MODULEFILE.strip_heredoc

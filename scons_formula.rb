@@ -44,16 +44,11 @@ class SconsFormula < Formula
        puts stderr "<%= @package.name %> <%= @package.version %>"
        puts stderr ""
     }
+    prereq python
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    if [ is-loaded python/3.3.0 ] {
-      set BUILD python3.3.0
-    } elseif { [ is-loaded python/2.7.9 ] } {
-      set BUILD python2.7.9
-    } else {
-      set BUILD python2.6.8
-    }
+    <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
 
     prepend-path PATH            $PREFIX/bin

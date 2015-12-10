@@ -4,11 +4,11 @@ class LibdwarfFormula < Formula
   md5 "7b80e1c717850de6ca003d1e909b588c"
   version "20150507"
  
-  depends_on [ "libelf" ]
+  depends_on [ "libelf","mpc" ]
 
   module_commands [
     "unload PrgEnv-cray PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi",
-    "load PrgEnv-gnu"
+    "load PrgEnv-gnu mpc"
   ]
 
   def install
@@ -19,19 +19,21 @@ class LibdwarfFormula < Formula
     ENV['CXX'] = "g++"
     libelf_inc = module_environment_variable("libelf", "LIBELF_INC")
     libelf_lib = module_environment_variable("libelf", "LIBELF_LIB")
-    config_cmd = [
-      "./configure --prefix=#{prefix} --enable-shared",
+    system "./configure --prefix=#{prefix} --enable-shared",
       "LDFLAGS=\"#{libelf_lib}\"",
       "CFLAGS=\"#{libelf_inc}\"",
       "CXXFLAGS=\"#{libelf_inc}\""
-    ]
+    libdwarf_buildpath = "#{prefix}/source/libdwarf/"
+    system "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:#{libdwarf_buildpath} make"
+    return
+
 
     # build libdwarf and dwarfdump libraries
-    libdwarf_buildpath = "#{prefix}/source/libdwarf-#{version}/"
     Dir.chdir libdwarf_buildpath 
     system config_cmd
     ENV['LD_LIBRARY_PATH'] = ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath
-    system "LD_LIBRARY_PATH=#{ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath + "libdwarf"} make dd"
+    #system "LD_LIBRARY_PATH=#{ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath + "libdwarf"} make dd"
+    system "LD_LIBRARY_PATH=#{ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath + "libdwarf"} make"
 
     # installation prep
     install_bin = prefix+"/bin"
@@ -44,7 +46,7 @@ class LibdwarfFormula < Formula
     FileUtils.mkdir_p install_man
 
     # install libraries
-    Dir.chdir prefix+"/source/libdwarf-#{version}/libdwarf"
+    Dir.chdir prefix+"/source/libdwarf"
     FileUtils.install 'libdwarf.a', install_lib, :mode => 0644
     FileUtils.install 'libdwarf.so', install_lib, :mode => 0755
 

@@ -1,7 +1,7 @@
 class Wgrib2Formula < Formula
 	homepage "http://www.cpc.ncep.noaa.gov/products/wesley/wgrib2/"
 	url "http://www.ftp.cpc.ncep.noaa.gov/wd51we/wgrib2/wgrib2.tgz"
-	md5 "9775ca2200e4cf3ed90e9464cd9f8711"
+	md5 "9b72f7f5c58d1c98d5b0d8448287ed6e"
 
 	module_commands do
 		commands = ["unload PrgEnv-gnu PrgEnv-pgi PrgEnv-cray PrgEnv-intel"]
