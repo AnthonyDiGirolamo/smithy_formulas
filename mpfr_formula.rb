@@ -1,16 +1,15 @@
-class LibgdFormula < Formula
-  homepage "http://libgd.bitbucket.org/"
-  url "https://bitbucket.org/libgd/gd-libgd/downloads/libgd-2.1.0.tar.bz2"
+class MpfrFormula < Formula
+  homepage "http://www.mpfr.org/"
+  url "http://www.mpfr.org/mpfr-current/mpfr-3.1.3.tar.bz2"
+  sha1 "3e46c5ce43701f2f36f9d01f407efe081700da80"
 
-  module_commands ["purge"]
-
+  depends_on "gmp"
   def install
     module_list
-    system "./configure --prefix=#{prefix}"
+    system "./configure --prefix=#{prefix} --with-gmp=#{gmp.prefix}"
     system "make"
     system "make install"
   end
-
   modulefile <<-MODULEFILE.strip_heredoc
     #%Module
     proc ModulesHelp { } {
@@ -21,7 +20,7 @@ class LibgdFormula < Formula
 
     set PREFIX <%= @package.prefix %>
 
-    prepend-path PATH      $PREFIX/bin
-    prepend-path MANPATH   $PREFIX/share/man
+    prepend-path LD_LIBRARY_PATH $PREFIX/lib
+    prepend-path MANPATH         $PREFIX/share/man
   MODULEFILE
 end

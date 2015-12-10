@@ -1,7 +1,14 @@
 class PythonFireworksFormula < Formula
   homepage "https://pythonhosted.org/FireWorks/"
-  url "https://github.com/materialsproject/fireworks/archive/v1.04.tar.gz"
-  md5  "c34efc9ff2880bd23f5603e5aabed84b"
+  url "https://github.com/materialsproject/fireworks/archive/v1.1.3.tar.gz"
+  md5 "d22c11d44a2735481724a7469e180c0a"
+
+  concern for_version(1.04) do
+    included do
+      url "https://github.com/materialsproject/fireworks/archive/v1.04.tar.gz"
+      md5  "c34efc9ff2880bd23f5603e5aabed84b"
+    end
+  end
 
   supported_build_names /python2.7/, /python3/
 
@@ -10,30 +17,22 @@ class PythonFireworksFormula < Formula
   end
 
   modules do
-    mods = []
-    mods << python_module_from_build_name
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+
+    mods = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
+    mods << "unload python"
+
+    mods << "load #{pe}gnu"
+    mods << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+
+    mods << "load #{python_module_from_build_name}"
     mods << "python_setuptools"
     mods
   end
 
   def install
     module_list
-    
-    patch <<-EOF.strip_heredoc
-      diff --git a/setup.py b/setup.py
-      --- a/setup.py    2015-01-20 16:03:16.000000000 -0500
-      +++ b/setup.py    2015-05-07 11:19:01.072917000 -0400
-      @@ -26,7 +26,7 @@
-               packages=find_packages(),
-               package_data={'fireworks.user_objects.queue_adapters': ['*.txt'], 'fireworks.user_objects.firetasks': ['templates/*.txt'], 'fireworks.flask_site': ['static/images/*', 'static/css/*', 'templates/*']},
-               zip_safe=False,
-      -        install_requires=['pyyaml>=3.1.0', 'pymongo>=2.4.2', 'Jinja2>=2.7.3',
-      +        install_requires=['pyyaml>=3.1.0', 'pymongo<=2.8', 'Jinja2>=2.7.3',
-                                 'six>=1.5.2', 'monty>=0.5.6', 'python-dateutil>=2.2'],
-               extras_require={'rtransfer': ['paramiko>=1.11'],
-                               'newt': ['requests>=2.01'],
-    EOF
-
     system_python "setup.py develop --prefix=#{prefix}"
   end
 
@@ -47,6 +46,8 @@ class PythonFireworksFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     prereq python
+    module load python_setuptools
+    prereq python_setuptools
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD

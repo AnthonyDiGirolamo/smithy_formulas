@@ -1,11 +1,9 @@
-class Bzip2Formula < Formula
-  homepage "http://www.bzip.org/"
-  url "http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz"
+class IlmbaseFormula < Formula
+  homepage "http://www.openexr.org/"
+  url "http://download.savannah.nongnu.org/releases/openexr/ilmbase-2.2.0.tar.gz"
   modules do
     case build_name
     when /gnu/   then ["gcc"]
-    when /pgi/   then ["pgi"]
-    when /intel/ then ["intel"]
     end
   end
 
@@ -14,15 +12,8 @@ class Bzip2Formula < Formula
     case build_name
     when /gnu/
       cc = "gcc"
-    when /intel/
-      cc = "icc"
-    when /pgi/
-      cc = "pgcc -noswitcherror"
-    else
-      cc = "gcc"
     end
-    system "make CC='#{cc}'"
-    system "make install PREFIX=#{prefix}"
+    system "cmake -DCMAKE_INSTALL_PREFIX=#{prefix}; make install"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc
@@ -33,7 +24,9 @@ class Bzip2Formula < Formula
     }
     module-whatis "<%= @package.name %> <%= @package.version %>"
     set PREFIX <%= @package.prefix %>
+    setenv ILM_PREFIX  $PREFIX
     prepend-path PATH      $PREFIX/bin
     prepend-path MANPATH   $PREFIX/share/man
+    prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
     MODULEFILE
 end

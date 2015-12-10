@@ -1,9 +1,56 @@
 class LammpsFormula < Formula
-
-  # LAMMPS 19Sep13 svn revision 10814 as per svn command below
-
   homepage "http://lammps.sandia.gov/"
   url "none"
+
+  # Recent Changes Page: http://lammps.sandia.gov/bug.html
+  # See https://github.com/lammps/lammps/commits/master for svn version numbers
+  concern for_version("15May2015_reaxc") do
+    included do
+      params svn_url: "svn://svn.icms.temple.edu/lammps-ro/trunk@13475"
+    end
+  end
+
+  concern for_version("15May2015") do
+    included do
+      params svn_url: "svn://svn.icms.temple.edu/lammps-ro/trunk@13475"
+    end
+  end
+
+  concern for_version("30Apr2015") do
+    included do
+      params svn_url: "svn://svn.icms.temple.edu/lammps-ro/trunk@13450"
+    end
+  end
+
+  concern for_version("06Mar2015") do
+    #Release date: 6 Mar 2015
+    included do
+      params svn_url: "svn://svn.icms.temple.edu/lammps-ro/trunk@13216"
+    end
+  end
+
+  concern for_version("20Jan2015") do
+    #Release date: 20 Jan 2015
+    included do
+       params svn_url: "svn://svn.icms.temple.edu/lammps-ro/trunk@12958"
+
+    end
+  end
+
+  concern for_version("10Feb15") do
+    # 10 Feb 2015 = stable version, SVN rev = 13095
+    included do
+      params svn_url: "svn://svn.lammps.org/lammps-ro/trunk@13095"
+    end
+  end
+
+  concern for_version("15May15") do
+    # Patched version
+    # See ticket https://rt.ccs.ornl.gov/Ticket/Display.html?id=254892
+    included do
+      params svn_url "svn://svn.lammps.org/lammps-ro/trunk@13475"
+    end
+  end
 
   module_commands do
     pe = "PE-"
@@ -33,78 +80,79 @@ class LammpsFormula < Formula
 
   def install
     module_list
-
-    system "svn co svn://svn.icms.temple.edu/lammps-ro/trunk@10814 source" unless Dir.exists?("source")
-
-    host = ENV['HOSTNAME']
-    host = `hostname`
-
+    system "svn co #{svn_url} source" unless Dir.exists?("source")
     Dir.chdir prefix+"/source"
-    system "svn revert src/MAKE/Makefile.jaguar"
-    system "sed 's/CCFLAGS/CCFLAGS = -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/Makefile.jaguar > src/MAKE/Makefile.exe"
-    system "sed -i 's/LINKFLAGS/LINKFLAGS = -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/Makefile.exe"
-    system "sed -i 's/NODE_PARTITION/LAMMPS_JPEG/g' src/MAKE/Makefile.exe"
-    system "sed -i 's/JPG_LIB =/JPG_LIB = -ljpeg/' src/MAKE/Makefile.exe"
-    system "sed -i 's/CXX/CC/g' src/MAKE/Makefile.exe"
 
-    Dir.chdir prefix + "/source/lib/reax"
-    system "sed 's/ gfortran/ftn/g' Makefile.gfortran > Makefile.cray"
+    # Special case for reaxc build/RT268132
+    if version =~ /15May2015_reaxc/
+      system "svn revert lib/reax/reax_defs.h"
+      patch <<-EOF.strip_heredoc
+        --- a/lib/reax/reax_defs.h
+        +++ b/lib/reax/reax_defs.h
+        @@ -44,7 +44,7 @@
+         #define NATDEF 40000
+         #define NATTOTDEF 39744
+         #define NSORTDEF 20
+        -#define MBONDDEF 20
+        +#define MBONDDEF 40
+         #define NAVIBDEF 50
+         #define NBOTYMDEF 200
+         #define NVATYMDEF 200
+      EOF
+    end
 
-    Dir.chdir prefix + "/source/lib/meam"
-    system "sed 's/ gfortran/ftn/g' Makefile.gfortran > Makefile.cray"
+    # The executable should be named lmp_${target_arch} on each machine.
+    target_arch="exe"
+    case arch
+    when /xk7/, /xk6/
+      target_arch="titan"
+    when /xc30/
+      target_arch="eos"
+    end
 
-    # File.open("src/MAKE/Makefile.exe", "w+") do |file|
-    #   file.write <<-EOF.strip_heredoc
-    #     test
-    #   EOF
-    # end
+    system "svn revert src/MAKE/MACHINES/Makefile.jaguar"
+    system "cp src/MAKE/MACHINES/Makefile.jaguar src/MAKE/MACHINES/Makefile.#{target_arch}"
+    system "sed 's/\\(CCFLAGS.*\\=.*\\)/\\1 -craype-verbose -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.jaguar > src/MAKE/MACHINES/Makefile.#{target_arch}"
+    system "sed -i 's/\\(LINKFLAGS.*\\=.*\\)/\\1 -O2 -march=bdver1 -ftree-vectorize/' src/MAKE/MACHINES/Makefile.#{target_arch}"
 
+    # No GPUS on xc30: This segment does not make sense for eos, though compiler
+    # wrappers appear to handle build correctly anyway.
     Dir.chdir prefix + "/source/lib/gpu"
     system "make -j8 -f Makefile.xk7 clean"
-    system "make -j8 -f Makefile.xk7" if module_is_available?("cudatoolkit")
-
+    system "make -j8 -f Makefile.xk7"
+    
     Dir.chdir prefix + "/source/lib/reax"
+    system "sed 's/ gfortran/ftn/g' Makefile.gfortran > Makefile.cray"
     system "make -f Makefile.cray clean"
     system "make -f Makefile.cray"
 
     Dir.chdir prefix + "/source/lib/meam"
+    system "sed 's/ gfortran/ftn/g' Makefile.gfortran > Makefile.cray"
     system "make -f Makefile.cray clean"
     system "make -f Makefile.cray"
 
     Dir.chdir prefix + "/source/src"
     system "make no-all clean-all"
-    system "make yes-asphere yes-body yes-class2 yes-colloid yes-dipole yes-fld"
-    system "make yes-granular yes-kspace yes-manybody yes-mc yes-meam yes-misc"
-    system "make yes-molecule yes-opt yes-reax yes-replica yes-rigid yes-shock"
-    system "make yes-srd yes-user-cg-cmm yes-user-misc"
-    system "make yes-gpu" if module_is_available?("cudatoolkit")
-    system "make -j8 exe"
+    system "make yes-std no-kim yes-meam no-poems yes-reax no-kokkos no-voronoi yes-gpu yes-kspace yes-molecule yes-rigid yes-colloid yes-manybody yes-misc yes-user-reaxc"
+    system "make -j8 #{target_arch}"
 
     system "mkdir -p #{prefix}/bin"
     system "cp #{prefix}/source/src/lmp_* #{prefix}/bin/"
   end
 
-  modulefile do
-    <<-EOF.strip_heredoc
-      #%Module
-      proc ModulesHelp { } {
-         puts stderr "<%= @package.name %> <%= @package.version %>"
-         puts stderr "-----------------------------------------------------------"
-         puts stderr "- Executable is lmp_exe"
-         puts stderr "- Built with asphere, body, class2, colloid, dipole, fld, "
-         puts stderr "-   granula, kspace, manybody, mc, meam, misc, molecule, "
-         puts stderr "-   opt, reax, replica, rigid, shock, srd, user-cg-cmm, "
-         puts stderr "-   user-misc packages."
-         puts stderr "- Build with gpu package on supported systems "
-         puts stderr "-----------------------------------------------------------"
-      }
-      module-whatis "<%= @package.name %> <%= @package.version %>"
+  modulefile <<-EOF.strip_heredoc
+    #%Module
+    proc ModulesHelp { } {
+       puts stderr "<%= @package.name %> <%= @package.version %>"
+       puts stderr ""
+    }
+    module-whatis "<%= @package.name %> <%= @package.version %>"
 
-      prereq #{module_is_available?("PrgEnv-gnu") ? 'PrgEnv-gnu' : 'PE-gnu'}
+    prereq PrgEnv-gnu
+    prereq fftw
 
-      set PREFIX <%= @package.prefix %>
+    set PREFIX <%= @package.prefix %>
 
-      prepend-path PATH            $PREFIX/bin
-    EOF
-  end
+    prepend-path PATH            $PREFIX/bin
+  EOF
 end

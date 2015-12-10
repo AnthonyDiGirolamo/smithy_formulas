@@ -1,8 +1,10 @@
 class GitFormula < Formula
   homepage "https://git-core.googlecode.com/"
-  url "https://github.com/git/git/archive/v2.3.2.tar.gz"
-  sha256 "7d8e15a2f41b8d6c391e527f461d61027cf3391c9ccc89b8c1a1a0785f18a0fb"
-  depends_on "curl/7.39.0"
+  url "https://github.com/git/git/archive/v2.4.6.tar.gz"
+  sha256 "33b2f07f38d2c3e11d9b1575b6529f3081ea66dae7fa1c6d8a7b77ad38d2543a"
+  depends_on ["curl/7.39.0","zlib/1.2.8"]
+
+  module_commands ["unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu PE-pgi PE-intel PE-gnu"]
 
   def install
     module_list
@@ -11,8 +13,8 @@ class GitFormula < Formula
     system "make install"
 
     system "mkdir -p #{prefix}/share/man"
-    system "curl -O https://www.kernel.org/pub/software/scm/git/git-manpages-2.3.2.tar.gz"
-    system "cd #{prefix}/share/man && tar xf #{prefix}/source/git-manpages-2.3.2.tar.gz"
+    system "curl -O https://www.kernel.org/pub/software/scm/git/git-manpages-2.4.6.tar.gz"
+    system "cd #{prefix}/share/man && tar xf #{prefix}/source/git-manpages-2.4.6.tar.gz"
   end
 
   modulefile <<-MODULEFILE.strip_heredoc

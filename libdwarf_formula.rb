@@ -1,28 +1,22 @@
 class LibdwarfFormula < Formula
   homepage "http://sourceforge.net/projects/libdwarf/"
-  url "none"
-  version "20130729-b"
+  url "https://github.com/Distrotech/libdwarf/archive/20150507.tar.gz"
+  md5 "7b80e1c717850de6ca003d1e909b588c"
+  version "20150507"
  
-  depends_on [ "libelf" ]
+  depends_on [ "libelf","mpc" ]
 
   module_commands [
     "unload PrgEnv-cray PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi",
-    "load PrgEnv-gnu",
-    "load git"
+    "load PrgEnv-gnu mpc"
   ]
 
   def install
     module_list
 
-    # checkout specified version of source code
-    system "git clone http://git.code.sf.net/p/libdwarf/code source" unless Dir.exists?("source")
-    Dir.chdir prefix+"/source"
-    system "git reset --hard"
-    system "git checkout #{version}"
-
     # setup build config
-    ENV['CC'] = "cc --target=native"
-    ENV['CXX'] = "CC --target=native"
+    ENV['CC'] = "gcc"
+    ENV['CXX'] = "g++"
     libelf_inc = module_environment_variable("libelf", "LIBELF_INC")
     libelf_lib = module_environment_variable("libelf", "LIBELF_LIB")
     config_cmd = [
@@ -32,21 +26,12 @@ class LibdwarfFormula < Formula
       "CXXFLAGS=\"#{libelf_inc}\""
     ]
 
-    # build libdwarf libraries
-    Dir.chdir prefix+"/source/libdwarf"
+    # build libdwarf and dwarfdump libraries
+    libdwarf_buildpath = "#{prefix}/source/libdwarf-#{version}/"
+    #Dir.chdir libdwarf_buildpath 
     system config_cmd
-    system "make"
-    ENV['LD_LIBRARY_PATH'] = ENV['LD_LIBRARY_PATH']+":#{prefix}/libdwarf"
-
-    # build dwarfdump
-    Dir.chdir prefix+"/source/dwarfdump"
-    system config_cmd
-    system "make"
-
-    # build dwarfdump2
-    Dir.chdir prefix+"/source/dwarfdump2"
-    system config_cmd
-    system "make"
+    ENV['LD_LIBRARY_PATH'] = ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath
+    system "LD_LIBRARY_PATH=#{ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath + "libdwarf"} make dd"
 
     # installation prep
     install_bin = prefix+"/bin"
@@ -59,7 +44,7 @@ class LibdwarfFormula < Formula
     FileUtils.mkdir_p install_man
 
     # install libraries
-    Dir.chdir prefix+"/source/libdwarf"
+    Dir.chdir prefix+"/source/libdwarf-#{version}/libdwarf"
     FileUtils.install 'libdwarf.a', install_lib, :mode => 0644
     FileUtils.install 'libdwarf.so', install_lib, :mode => 0755
 
@@ -67,12 +52,10 @@ class LibdwarfFormula < Formula
     FileUtils.install %w{ dwarf.h libdwarf.h }, install_inc, :mode => 0644
 
     # install executables
-    Dir.chdir prefix+"/source/dwarfdump"
+    Dir.chdir prefix+"/source/libdwarf-#{version}/dwarfdump"
     FileUtils.install 'dwarfdump', install_bin, :mode => 0755
     FileUtils.install 'dwarfdump.conf', install_lib, :mode => 0644
     FileUtils.install 'dwarfdump.1', install_man, :mode => 0644
-    Dir.chdir prefix+"/source/dwarfdump2"
-    FileUtils.install 'dwarfdump', install_bin+"/dwarfdump2", :mode => 0755
   end
 
   modulefile <<-MODULEFILE.strip_heredoc

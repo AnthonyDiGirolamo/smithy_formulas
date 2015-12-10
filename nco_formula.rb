@@ -1,16 +1,38 @@
 class NcoFormula < Formula
   homepage "http://nco.sourceforge.net/"
-  url "http://nco.sourceforge.net/src/nco-4.3.9.tar.gz"
-  md5 "8f50e8b3fcec77e568d48ba452b69c47"
+
+  concern for_version "4.0.8" do
+    included do
+      url "http://nco.sourceforge.net/src/nco-4.0.8.tar.gz"
+      md5 "edd1e5dab719b4bfc2cd07ec840f4f1d"
+    end
+  end
+
+  concern for_version "4.3.9" do
+    included do
+      url "http://nco.sourceforge.net/src/nco-4.3.9.tar.gz"
+      md5 "8f50e8b3fcec77e568d48ba452b69c47"
+    end
+  end
+
+  concern for_version "4.5.2" do
+    included do
+      url "http://nco.sourceforge.net/src/nco-4.5.2.tar.gz"
+      md5 "b2be3d112da617cd2eeec232e055b86b"
+    end
+  end
 
   module_commands do
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+    prfx = module_is_available?("PrgEnv-gnu") ? "cray-" : ""
+    netcdf_module = module_is_available?("cray-netcdf") ? "cray-netcdf" : "netcdf"
+    hdf5_module = module_is_available?("cray-hdf5") ? "cray-hdf5" : "hdf5"
 
     [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel",
       "load #{pe}gnu",
-      "load netcdf",
-      "load hdf5",
+      "load #{netcdf_module}",
+      "load #{hdf5_module}",
       "load gsl",
       "load udunits",
       "load java" ]
@@ -23,22 +45,7 @@ class NcoFormula < Formula
     ENV["CC"]      = "gcc"
     ENV["CXX"]     = "g++"
 
-    # ENV["CPPFLAGS"] = "-I#{expat.prefix}/include -I#{gsl.prefix}/include"
-    # ENV["LDFLAGS"] = [
-    #   "-L#{expat.prefix}/lib",
-    #   "-Wl,-rpath,#{expat.prefix}/lib",
-    #   "-Wl,-rpath,/opt/gcc/4.7.0/snos/lib64",
-    #   "-Wl,-rpath,/opt/cray/netcdf/4.2.0/gnu/47/lib",
-    #   "-Wl,-rpath,#{udunits.prefix}/lib",
-    #   "-Wl,-rpath,#{gsl.prefix}/lib"
-    # ].join(" ")
-
-    # cpp_flags = "-I#{expat.prefix}/include -I#{gsl.prefix}/include"
-    # ld_flags  = "-L#{expat.prefix}/lib -L#{gsl.prefix}/lib"
-
     system "UDUNITS2_PATH=#{udunits.prefix}",
-           # "CPPFLAGS='#{cpp_flags}'",
-           # "LDFLAGS='#{ld_flags}'",
            "HDF5_ROOT=$HDF5_DIR",
            "NETCDF4_ROOT=$NETCDF_DIR",
            "NETCDF_INC=$NETCDF_DIR/include",

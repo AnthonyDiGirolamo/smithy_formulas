@@ -18,7 +18,9 @@ class DdtFormula < Formula
       raise "Unsupported build type (#{build_name})"
     end
 
-    tarfile = "allinea-tools-#{version}-#{ddt_os}-x86_64.tar"
+    # Give DDT versions with underscores since Smithy can't deal with dashes yet
+    sanitized_version = version.gsub("_","-")
+    tarfile = "allinea-forge-#{sanitized_version}-#{ddt_os}-x86_64.tar"
     system ["wget", "http://content.allinea.com/downloads/#{tarfile}"] unless File.exists?(tarfile)
     system "tar -xf #{tarfile}"
     FileUtils.rm tarfile
@@ -64,8 +66,8 @@ class DdtFormula < Formula
     set ddt_version <%= @package.version %>
     set apppath <%= @package.prefix %>
     setenv DDT_HOME $apppath
-    setenv DDT_LICENSE_FILE /sw/sources/ddt/Licence
-    setenv MAP_LICENSE_FILE /sw/sources/ddt/Licence.map
+    setenv DDT_LICENSE_FILE <%= @package.prefix %>/licences/Licence
+    setenv MAP_LICENSE_FILE <%= @package.prefix %>/licences/Licence.map
     prepend-path PATH $apppath/bin
 
     <% if @package.build_name.include?("sles11") %>
@@ -84,7 +86,7 @@ class DdtFormula < Formula
         puts stderr " "
     }
 
-    setenv DDTMPIRUN <%= Smithy::Config.arch == "xc30" ? "/opt/cray/alps/default/bin/aprun" : "/usr/bin/aprun" %>
+    setenv DDTMPIRUN <%= Smithy::Config.arch == "xc30" || Smithy::Config.arch == "xe6" ? "/opt/cray/alps/default/bin/aprun" : "/usr/bin/aprun" %>
 
     # Add memory debugging libraries to LD_LIBRARY_PATH on the compute nodes
     prepend-path LD_LIBRARY_PATH "/opt$apppath/lib/64"
