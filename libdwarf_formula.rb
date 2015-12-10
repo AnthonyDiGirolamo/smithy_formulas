@@ -4,11 +4,11 @@ class LibdwarfFormula < Formula
   md5 "7b80e1c717850de6ca003d1e909b588c"
   version "20150507"
  
-  depends_on [ "libelf" ]
+  depends_on [ "libelf","mpc" ]
 
   module_commands [
     "unload PrgEnv-cray PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi",
-    "load PrgEnv-gnu"
+    "load PrgEnv-gnu mpc"
   ]
 
   def install
@@ -28,7 +28,7 @@ class LibdwarfFormula < Formula
 
     # build libdwarf and dwarfdump libraries
     libdwarf_buildpath = "#{prefix}/source/libdwarf-#{version}/"
-    Dir.chdir libdwarf_buildpath 
+    #Dir.chdir libdwarf_buildpath 
     system config_cmd
     ENV['LD_LIBRARY_PATH'] = ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath
     system "LD_LIBRARY_PATH=#{ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath + "libdwarf"} make dd"
