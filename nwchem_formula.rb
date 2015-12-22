@@ -50,14 +50,16 @@ class NwchemFormula < Formula
     end
 
     ENV["ARMCI_NETWORK"] = "MPI-PR"
-    ENV["USE_64TO32"] = "y"
     ENV["USE_MPI"] = "y"
     ENV["BLAS_SIZE"] = "4"
     ENV["LAPACK_SIZE"] = "4"
     ENV["SCALAPACK_SIZE"] = "4"
     ENV["SCALAPACK"] = "-lsci_#{compiler}_mp"
     ENV["BLASOPT"] = "-lsci_#{compiler}_mp"
-    ENV["TCE_CUDA"] = "y" if module_is_available?("cudatoolkit")
+    ENV["USE_64TO32"] = "y"
+    if ["xk6", "xk7"].include?(Smithy::Config.arch)
+      ENV["TCE_CUDA"] = "y"
+    end
 
     system "ln -svf #{prefix}/source/src #{prefix}/src"
     Dir.chdir("#{prefix}/src")
