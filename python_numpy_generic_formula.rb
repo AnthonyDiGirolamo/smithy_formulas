@@ -71,8 +71,8 @@ class PythonNumpyGenericFormula < Formula
       FileUtils.cp "#{ml_prefix}/lib/libsci_gnu.so",  "#{prefix}/lib", verbose: true
     end
 
-    ENV['CC']  = 'cc'
-    ENV['CXX'] = 'CC'
+    ENV['CC']  = 'gcc'
+    ENV['CXX'] = 'g++'
     ENV['OPT'] = '-O3 -funroll-all-loops'
 
     inc_dirs = ""
