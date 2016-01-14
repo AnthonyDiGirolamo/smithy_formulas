@@ -5,9 +5,24 @@ class PythonH5pyFormula < Formula
 
   supported_build_names /python.*_hdf5.*/
 
-  params hdf5_module_name: module_is_available?("cray-hdf5") ? "cray-hdf5" : "hdf5"
+  params hdf5_module_name: cray_system? ? "cray-hdf5" : "hdf5"
 
-  additional_software_roots [ config_value("lustre-software-root").fetch(Smithy::Config.hostname) ]
+  additional_software_roots [ config_value("lustre-software-root")[hostname] ]
+  #additional_software_roots [ config_value("lustre-software-root").fetch(hostname) ] if cray_system?
+
+  concern for_version("2.5.0") do
+    included do
+      url "https://pypi.python.org/packages/source/h/h5py/h5py-2.5.0.tar.gz"
+      md5 "6e4301b5ad5da0d51b0a1e5ac19e3b74"
+    end 
+  end
+
+  concern for_version("2.4.0") do
+    included do
+      url "https://pypi.python.org/packages/source/h/h5py/h5py-2.4.0.tar.gz"
+      md5 "80c9a94ae31f84885cc2ebe1323d6758"
+    end
+  end
 
   concern for_version("2.2.0") do
     included do
@@ -33,6 +48,7 @@ class PythonH5pyFormula < Formula
     commands << "unload python"
     commands << "load #{python_module_from_build_name}"
     commands << "load python_numpy"
+    commands << "swap python_numpy python_numpy/#{$1}" if build_name =~ /numpy([\d\.]+)/
     commands << "load python_cython"
     commands << "load szip"
 
@@ -49,14 +65,13 @@ class PythonH5pyFormula < Formula
     ENV["CPPFLAGS"] = "-I#{hdf5_prefix}/include"
     ENV["LDFLAGS"]  = "-L#{hdf5_prefix}/lib"
 
-    system_python "setup.py build"
-    system_python "setup.py install --prefix=#{prefix} --compile"
-    system_python "setup.py test"
+    system_python "setup.py install --prefix=#{prefix}"
+    #system_python "setup.py build"
+    #system_python "setup.py test"
   end
 
 
-  modulefile do
-    <<-MODULEFILE.strip_heredoc
+  modulefile <<-MODULEFILE.strip_heredoc
     #%Module
     proc ModulesHelp { } {
        puts stderr "<%= @package.name %> <%= @package.version %>"
@@ -87,5 +102,4 @@ class PythonH5pyFormula < Formula
     prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib64
     prepend-path MANPATH         $PREFIX/share/man
     MODULEFILE
-  end
 end
