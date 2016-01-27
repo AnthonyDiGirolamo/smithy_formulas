@@ -5,15 +5,15 @@ class CdoFormula < Formula
   
  
   module_commands do
-    [ "load netcdf" ]
+    [ "load cray-netcdf" ]
   end
 
-  depends_on ["netcdf"]
+#  depends_on ["cray-netcdf"]
 
   def install
     ENV["CC"]      = "gcc"
     ENV["CXX"]     = "g++"
-    system "./configure --with-netcdf=#{netcdf.prefix} --prefix=#{prefix}"
+    system "./configure --with-netcdf=#{cray_netcdf.prefix} --prefix=#{prefix}"
     system "make"
     system "make install"
   end

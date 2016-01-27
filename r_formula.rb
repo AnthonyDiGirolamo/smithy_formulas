@@ -6,7 +6,7 @@ class RFormula < Formula
   module_commands [
                    "unload PE-gnu PE-pgi PE-intel PE-cray",
                    "unload r",
-                   "load PE-gnu",
+                   "load PrgEnv-intel",
                    "load szip",
                    "load acml/5.3.0",
                    "load sprng",

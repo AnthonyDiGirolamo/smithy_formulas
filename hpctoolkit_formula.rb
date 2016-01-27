@@ -8,6 +8,7 @@ class HpctoolkitFormula < Formula
       "load PrgEnv-gnu",
       "load subversion",
       "load papi/5.1.0.2",
+      "load serf/1.3.8",
       "load java",
     ]
     commands << "cudatoolkit" if build_name.include? "cuda"
