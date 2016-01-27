@@ -2,6 +2,11 @@ class PythonNumpyGenericFormula < Formula
   # Testing numpy:
   # module load python python_nose python_numpy
   # python -c 'import nose, numpy; numpy.test()'
+  
+  # 
+  # This formula needs to be used with invocations of the form:
+  # smithy formula install --formula-name python_numpy_generic python_numpy/1.10.4/python3.4.3_craylibsci_gnu4.9.0
+  #
 
   homepage "http://www.numpy.org/"
   additional_software_roots [ config_value("lustre-software-root")[hostname] ]
