@@ -12,18 +12,18 @@ class Hdf5Formula < Formula
     commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
     when /gnu/
-      # commands << "load #{pe}gnu"
+      commands << "load #{pe}gnu"
       commands << "load gcc"
       commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
-    # when /pgi/
-    #   commands << "load #{pe}pgi"
-    #   commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
-    # when /intel/
-    #   commands << "load #{pe}intel"
-    #   commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
-    # when /cray/
-    #   commands << "load #{pe}cray"
-    #   commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
+     when /pgi/
+       commands << "load #{pe}pgi"
+       commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
+    when /intel/
+      commands << "load #{pe}intel"
+      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+     when /cray/
+       commands << "load #{pe}cray"
+       commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
 
     commands << "load szip"
