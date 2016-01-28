@@ -35,6 +35,7 @@ class PythonMatplotlibFormula < Formula
       commands << "load python_pygtk"
     end
     commands << "load python_nose"
+    commands << "load python_setuptools"
     commands
   end
 
