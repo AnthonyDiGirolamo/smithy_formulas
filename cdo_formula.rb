@@ -13,7 +13,8 @@ class CdoFormula < Formula
   def install
     ENV["CC"]      = "gcc"
     ENV["CXX"]     = "g++"
-    system "./configure --with-netcdf=#{cray_netcdf.prefix} --prefix=#{prefix}"
+    netcdf_dir = ENV['NETCDF_DIR']
+    system "./configure --with-netcdf=#{netcdf_dir} --prefix=#{prefix}"
     system "make"
     system "make install"
   end

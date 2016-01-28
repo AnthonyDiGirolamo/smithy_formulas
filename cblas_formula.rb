@@ -24,7 +24,7 @@ class CblasFormula < Formula
       commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
 
-    commands << "load acml"
+    commands << "load acml" if !cray_system?
     commands
   end
 
@@ -35,6 +35,27 @@ class CblasFormula < Formula
 
     acml_prefix = module_environment_variable("acml", "ACML_BASE_DIR")
 
+    if cray_system?
+    patch <<-EOF.strip_heredoc
+      diff --git a/Makefile.in b/Makefile.in
+      new file mode 100644
+      index 0000000..1235d4b
+      --- /dev/null
+      +++ b/Makefile.in
+      @@ -0,0 +1,11 @@
+      +SHELL = /bin/sh
+      +PLAT = LINUX
+      +CBLIB = #{prefix}/lib/libcblas.a
+      +CC = cc
+      +FC = ftn
+      +LOADER = $(FC)
+      +CFLAGS = -O3 -DADD_
+      +FFLAGS = -O3
+      +ARCH = ar
+      +ARCHFLAGS = r
+      +RANLIB = ranlib
+    EOF
+    else
     patch <<-EOF.strip_heredoc
       diff --git a/Makefile.in b/Makefile.in
       new file mode 100644
@@ -55,7 +76,7 @@ class CblasFormula < Formula
       +ARCHFLAGS = r
       +RANLIB = ranlib
     EOF
-
+    end
     system "cat Makefile.in"
     system "make clean"
     FileUtils.mkdir_p "#{prefix}/lib"
