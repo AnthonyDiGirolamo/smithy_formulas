@@ -22,7 +22,7 @@ class PcreFormula < Formula
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
     set PREFIX <%= @package.prefix %>
-
+    prepend-path PATH             $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
     prepend-path MANPATH         $PREFIX/share/man
   MODULEFILE
