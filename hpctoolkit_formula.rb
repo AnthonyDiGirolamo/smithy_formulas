@@ -10,6 +10,7 @@ class HpctoolkitFormula < Formula
       "load papi/5.1.0.2",
       "load serf/1.3.8",
       "load java",
+      "load cmake"
     ]
     commands << "cudatoolkit" if build_name.include? "cuda"
     commands
