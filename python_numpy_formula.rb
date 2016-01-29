@@ -1,8 +1,4 @@
 class PythonNumpyFormula < Formula
-  # Testing numpy:
-  # module load python python_nose python_numpy
-  # python -c 'import nose, numpy; numpy.test()'
-
   homepage "http://www.numpy.org/"
   additional_software_roots [ config_value("lustre-software-root")[hostname] ]
 
@@ -37,6 +33,8 @@ class PythonNumpyFormula < Formula
 
     commands << "load acml"        if build_name.include? "acml"
     commands << "load cray-libsci" if build_name.include? "libsci"
+    commands << "load fftw"
+
     commands << "unload python"
     commands << "load #{python_module_from_build_name}"
     commands << "load python_nose" # needed to run test suite
@@ -48,8 +46,16 @@ class PythonNumpyFormula < Formula
     module_list
     ml_prefix = ""
     inc_dirs  = ""
+    lib_name  = ""
 
     FileUtils.mkdir_p "#{prefix}/lib"
+
+    ENV['CC']  = 'gcc'
+    ENV['CXX'] = 'g++'
+    ENV['OPT'] = '-O3 -funroll-all-loops'
+
+    fftw_lib_dir = module_environment_variable("fftw/3.3.4.5", "FFTW_DIR")
+    fftw_inc_dir = module_environment_variable("fftw/3.3.4.5", "FFTW_INC")
 
     if build_name.include? "acml"
       ml_prefix = module_environment_variable("acml", "ACML_BASE_DIR")
@@ -58,34 +64,37 @@ class PythonNumpyFormula < Formula
       FileUtils.cp "#{ml_prefix}/lib/libacml.a",     "#{prefix}/lib", verbose: true
       FileUtils.cp "#{ml_prefix}/lib/libacml.so",    "#{prefix}/lib", verbose: true
       inc_dirs = "#{cblas.prefix}/include"
+      lib_name  = "acml"
     elsif build_name.include? "libsci"
+      ENV['CC']  = 'cc'
+      ENV['CXX'] = 'CC'
       ml_prefix = module_environment_variable("cray-libsci", "CRAY_LIBSCI_PREFIX_DIR")
+      FileUtils.cp "#{cblas.prefix}/lib/libcblas.a", "#{prefix}/lib", verbose: true
       FileUtils.cp "#{ml_prefix}/lib/libsci_gnu.a",  "#{prefix}/lib", verbose: true
       FileUtils.cp "#{ml_prefix}/lib/libsci_gnu.so", "#{prefix}/lib", verbose: true
-      inc_dirs = "#{ml_prefix}/include"
-    end
 
-    ENV['CC']  = 'gcc'
-    ENV['CXX'] = 'g++'
-    ENV['OPT'] = '-O3 -funroll-all-loops'
+      FileUtils.ln_s "#{prefix}/lib/libsci_gnu.so", "#{prefix}/lib/libsci_gnu_51.so.5", verbose: true, force: true
+      inc_dirs = "#{ml_prefix}/include"
+      lib_name  = "sci_gnu"
+    end
 
     File.open("site.cfg", "w+") do |f|
       f.write <<-EOF.strip_heredoc
         [blas]
-        blas_libs = cblas, acml
+        blas_libs = cblas, #{lib_name}
         library_dirs = #{prefix}/lib
         include_dirs = #{inc_dirs}
 
         [lapack]
         language = f77
-        lapack_libs = acml
+        lapack_libs = #{lib_name}
         library_dirs = #{ml_prefix}/lib
         include_dirs = #{ml_prefix}/include
 
         [fftw]
         libraries = fftw3
-        library_dirs = /opt/fftw/3.3.0.1/x86_64/lib
-        include_dirs = /opt/fftw/3.3.0.1/x86_64/include
+        library_dirs = #{fftw_lib_dir}
+        include_dirs = #{fftw_inc_dir}
       EOF
     end
 
@@ -96,8 +105,17 @@ class PythonNumpyFormula < Formula
   end
 
   def test
+    module_list
     Dir.chdir prefix
-    system_python "-c 'import nose, numpy; numpy.test()'"
+    system "PYTHONPATH=$PYTHONPATH:#{prefix}/lib/#{python_libdir(current_python_version)}/site-packages",
+      "LD_LIBRARY_PATH=#{prefix}/lib:$LD_LIBRARY_PATH",
+      "python -c 'import nose, numpy; numpy.test()'"
+
+    notice_warn <<-EOF.strip_heredoc
+      Testing numpy manually:
+      module load python python_nose python_numpy
+      python -c 'import nose, numpy; numpy.test()'
+    EOF
   end
 
   modulefile do
