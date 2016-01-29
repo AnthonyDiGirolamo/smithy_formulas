@@ -3,11 +3,11 @@ class OctaveFormula < Formula
   url "https://ftp.gnu.org/gnu/octave/octave-4.0.0.tar.xz"
   md5 "f3de0a0d9758e112f13ce1f5eaf791bf"
 
-  module_commands [ "unload PrgEnv-cray PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi", "load PrgEnv-gnu", "load pcre" ]
+  module_commands [ "unload PrgEnv-cray PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi", "load PrgEnv-gnu", "load pcre", "load cray-libsci" ]
 
   def install
     module_list
-    system "CPPFLAGS=`pcre-config --cflags` LDFLAGS=`pcre-config --libs` ./configure --prefix=#{prefix}"
+    system "CPPFLAGS=`pcre-config --cflags` LDFLAGS=`pcre-config --libs` ./configure --prefix=#{prefix}  --with-blas=$CRAY_LIBSCI_PREFIX_DIR/lib/libsci_gnu.a"
     system "make"
     system "make install"
   end
