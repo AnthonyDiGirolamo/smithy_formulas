@@ -11,6 +11,7 @@ class PythonNumexprFormula < Formula
     commands = ["unload python"]
     commands << "load #{python_module_from_build_name}"
     commands << "load python_numpy"
+    commands << "load python_nose"
   end
 
   def install
@@ -18,6 +19,20 @@ class PythonNumexprFormula < Formula
 
     system_python "setup.py build"
     system_python "setup.py install --prefix=#{prefix} --compile"
+  end
+
+  def test
+    module_list
+    Dir.chdir prefix
+    system "PYTHONPATH=$PYTHONPATH:#{prefix}/lib/#{python_libdir(current_python_version)}/site-packages",
+      "LD_LIBRARY_PATH=#{prefix}/lib:$LD_LIBRARY_PATH",
+      "python -c 'import nose, numexpr; numexpr.test()'"
+
+    notice_warn <<-EOF.strip_heredoc
+      Testing numexpr manually:
+      module load python python_nose python_numpy python_numexpr
+      python -c 'import nose, numexpr; numexpr.test()'
+    EOF
   end
 
   modulefile <<-MODULEFILE
