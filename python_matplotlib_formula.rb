@@ -31,9 +31,7 @@ class PythonMatplotlibFormula < Formula
     commands << "unload python"
     commands << "load #{python_module_from_build_name}"
     commands << "load python_numpy"
-    unless Smithy::Config.arch = "xc30"
-      commands << "load python_pygtk"
-    end
+    commands << "load python_pygtk" unless arch == "xc30"
     commands << "load python_nose"
     commands << "load python_setuptools"
     commands
@@ -60,7 +58,35 @@ class PythonMatplotlibFormula < Formula
         EOF
       end
     end
+
+    FileUtils.mkdir_p "#{prefix}/lib"
+
+    ENV['CC']  = 'gcc'
+    ENV['CXX'] = 'g++'
+    ENV['OPT'] = '-O3 -funroll-all-loops'
+
+    if build_name.include? "libsci"
+      ENV['CC']  = 'cc'
+      ENV['CXX'] = 'CC'
+      snos_libs = module_environment_variable("gcc", "LD_LIBRARY_PATH")
+      FileUtils.cp "#{snos_libs}/libstdc++.so.6", "#{prefix}/lib", verbose: true
+    end
+
     system_python "setup.py install --prefix=#{prefix} --compile"
+  end
+
+  def test
+    module_list
+    Dir.chdir prefix
+    system "PYTHONPATH=$PYTHONPATH:#{prefix}/lib/#{python_libdir(current_python_version)}/site-packages",
+      "LD_LIBRARY_PATH=#{prefix}/lib:$LD_LIBRARY_PATH",
+      "python -c 'import nose, matplotlib; matplotlib.test()'"
+
+    notice_warn <<-EOF.strip_heredoc
+      Testing matplotlib manually:
+      module load python python_nose python_numpy python_matplotlib
+      python -c 'import nose, matplotlib; matplotlib.test()'
+    EOF
   end
 
   modulefile <<-MODULEFILE.strip_heredoc

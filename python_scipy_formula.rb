@@ -56,6 +56,8 @@ class PythonScipyFormula < Formula
   def install
     module_list
 
+    FileUtils.mkdir_p "#{prefix}/lib"
+
     ENV['CC']  = 'gcc'
     ENV['CXX'] = 'g++'
     ENV['OPT'] = '-O3 -funroll-all-loops'
