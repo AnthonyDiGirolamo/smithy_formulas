@@ -1,7 +1,5 @@
 class PythonH5pyFormula < Formula
   homepage "http://www.h5py.org/"
-  url "https://pypi.python.org/packages/source/h/h5py/h5py-2.4.0.tar.gz"
-  md5 "80c9a94ae31f84885cc2ebe1323d6758"
 
   supported_build_names /python.*_hdf5.*/
 
@@ -14,7 +12,7 @@ class PythonH5pyFormula < Formula
     included do
       url "https://pypi.python.org/packages/source/h/h5py/h5py-2.5.0.tar.gz"
       md5 "6e4301b5ad5da0d51b0a1e5ac19e3b74"
-    end 
+    end
   end
 
   concern for_version("2.4.0") do
@@ -50,6 +48,7 @@ class PythonH5pyFormula < Formula
     commands << "load python_numpy"
     commands << "swap python_numpy python_numpy/#{$1}" if build_name =~ /numpy([\d\.]+)/
     commands << "load python_cython"
+    commands << "load python_nose"
     commands << "load szip"
 
     commands << "load #{hdf5_module_name}"
@@ -68,6 +67,20 @@ class PythonH5pyFormula < Formula
     system_python "setup.py install --prefix=#{prefix}"
     #system_python "setup.py build"
     #system_python "setup.py test"
+  end
+
+  def test
+    module_list
+    Dir.chdir prefix
+    system "PYTHONPATH=$PYTHONPATH:#{prefix}/lib/#{python_libdir(current_python_version)}/site-packages",
+      "LD_LIBRARY_PATH=#{prefix}/lib:$LD_LIBRARY_PATH",
+      "python -c 'import nose, h5py; h5py.run_tests()'"
+
+    notice_warn <<-EOF.strip_heredoc
+      Testing h5py manually:
+      module load python python_nose python_numpy python_h5py
+      python -c 'import nose, h5py; h5py.run_tests()'
+    EOF
   end
 
 
