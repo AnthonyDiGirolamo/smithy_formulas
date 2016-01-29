@@ -6,7 +6,7 @@ class PythonNumpyFormula < Formula
   homepage "http://www.numpy.org/"
   additional_software_roots [ config_value("lustre-software-root")[hostname] ]
 
-  supported_build_names /python.*_gnu.*/
+  supported_build_names /python.*_acml_gnu.*|python.*_craylibsci_gnu.*/
 
   concern for_version("1.8.0") do
     included do
@@ -21,7 +21,10 @@ class PythonNumpyFormula < Formula
   end
 
   depends_on do
-    [ python_module_from_build_name, "cblas/20110120/*acml*" ]
+    dependencies = [ python_module_from_build_name ]
+    dependencies << "cblas/20110120/*acml*"   if build_name.include? "acml"
+    dependencies << "cblas/20110120/*libsci*" if build_name.include? "libsci"
+    dependencies
   end
 
   module_commands do
@@ -29,39 +32,38 @@ class PythonNumpyFormula < Formula
     pe = "PrgEnv-" if cray_system?
 
     commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
-    # case build_name
-    # when /gnu/
-      commands << "load #{pe}gnu"
-      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
-    # when /pgi/
-    #   commands << "load #{pe}pgi"
-    #   commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
-    # when /intel/
-    #   commands << "load #{pe}intel"
-    #   commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
-    # when /cray/
-    #   commands << "load #{pe}cray"
-    #   commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
-    # end
+    commands << "load #{pe}gnu"
+    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
 
-    commands << "load acml"
+    commands << "load acml"        if build_name.include? "acml"
+    commands << "load cray-libsci" if build_name.include? "libsci"
     commands << "unload python"
     commands << "load #{python_module_from_build_name}"
-
+    commands << "load python_nose" # needed to run test suite
     commands
   end
 
+
   def install
     module_list
-
-    acml_prefix = module_environment_variable("acml", "ACML_BASE_DIR")
-
-    acml_prefix += "/gfortran64"
+    ml_prefix = ""
+    inc_dirs  = ""
 
     FileUtils.mkdir_p "#{prefix}/lib"
-    FileUtils.cp "#{cblas.prefix}/lib/libcblas.a", "#{prefix}/lib", verbose: true
-    FileUtils.cp "#{acml_prefix}/lib/libacml.a",   "#{prefix}/lib", verbose: true
-    FileUtils.cp "#{acml_prefix}/lib/libacml.so",  "#{prefix}/lib", verbose: true
+
+    if build_name.include? "acml"
+      ml_prefix = module_environment_variable("acml", "ACML_BASE_DIR")
+      ml_prefix += "/gfortran64"
+      FileUtils.cp "#{cblas.prefix}/lib/libcblas.a", "#{prefix}/lib", verbose: true
+      FileUtils.cp "#{ml_prefix}/lib/libacml.a",     "#{prefix}/lib", verbose: true
+      FileUtils.cp "#{ml_prefix}/lib/libacml.so",    "#{prefix}/lib", verbose: true
+      inc_dirs = "#{cblas.prefix}/include"
+    elsif build_name.include? "libsci"
+      ml_prefix = module_environment_variable("cray-libsci", "CRAY_LIBSCI_PREFIX_DIR")
+      FileUtils.cp "#{ml_prefix}/lib/libsci_gnu.a",  "#{prefix}/lib", verbose: true
+      FileUtils.cp "#{ml_prefix}/lib/libsci_gnu.so", "#{prefix}/lib", verbose: true
+      inc_dirs = "#{ml_prefix}/include"
+    end
 
     ENV['CC']  = 'gcc'
     ENV['CXX'] = 'g++'
@@ -72,13 +74,13 @@ class PythonNumpyFormula < Formula
         [blas]
         blas_libs = cblas, acml
         library_dirs = #{prefix}/lib
-        include_dirs = #{cblas.prefix}/include
+        include_dirs = #{inc_dirs}
 
         [lapack]
         language = f77
         lapack_libs = acml
-        library_dirs = #{acml_prefix}/lib
-        include_dirs = #{acml_prefix}/include
+        library_dirs = #{ml_prefix}/lib
+        include_dirs = #{ml_prefix}/include
 
         [fftw]
         libraries = fftw3
@@ -93,6 +95,11 @@ class PythonNumpyFormula < Formula
     system_python "setup.py install --prefix=#{prefix} --compile"
   end
 
+  def test
+    Dir.chdir prefix
+    system_python "-c 'import nose, numpy; numpy.test()'"
+  end
+
   modulefile do
     <<-MODULEFILE
       #%Module
@@ -103,6 +110,7 @@ class PythonNumpyFormula < Formula
       # One line description
       module-whatis "<%= @package.name %> <%= @package.version %>"
 
+      prereq PrgEnv-gnu PE-gnu
       prereq python
       conflict python_numpy
 
