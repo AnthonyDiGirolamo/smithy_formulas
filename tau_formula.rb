@@ -35,6 +35,7 @@ class TauFormula < Formula
     end
     commands << "load cudatoolkit" if build_name =~ /gpu/
     commands << "load papi"
+    commands << "load libelf"
     commands
   end
 
@@ -62,9 +63,9 @@ class TauFormula < Formula
     end
     # eos uses mpich 3.x
     if ENV['HOSTNAME'] =~ /^eos/
-      config_args << "-useropt=\"-I#{libelf.prefix}/include -I#{boost.prefix}/include -I#{dyninstapi.prefix}/include -DTAU_MPICH3\""
+      config_args << "-useropt=\"-I#{libelf.prefix}/include -I#{boost.prefix}/include -I#{dyninstapi.prefix}/include -L#{libelf.prefix}/lib -DTAU_MPICH3\""
     else
-      config_args << "-useropt=\"-I#{libelf.prefix}/include -I#{boost.prefix}/include -I#{dyninstapi.prefix}/include\""
+      config_args << "-useropt=\"-I#{libelf.prefix}/include -I#{boost.prefix}/include -I#{dyninstapi.prefix}/include -L#{libelf.prefix}/lib\""
     end
 
     if build_name.include?("cray")
