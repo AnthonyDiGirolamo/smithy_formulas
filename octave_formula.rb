@@ -7,7 +7,7 @@ class OctaveFormula < Formula
 
   def install
     module_list
-    system "CPPFLAGS=`pcre-config --cflags` LDFLAGS=`pcre-config --libs` ./configure --prefix=#{prefix}  --with-blas=$CRAY_LIBSCI_PREFIX_DIR/lib/libsci_gnu.a"
+    system "CPPFLAGS=`pcre-config --cflags`\" -fpermissive\" LDFLAGS=`pcre-config --libs` ./configure --prefix=#{prefix}  --with-blas=$CRAY_LIBSCI_PREFIX_DIR/lib/libsci_gnu.a"
     system "make"
     system "make install"
   end
