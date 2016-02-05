@@ -1,17 +1,16 @@
 class RFormula < Formula
   homepage "http://www.r-project.org"
-  url "http://mirrors.nics.utk.edu/cran/src/base/R-3/R-3.2.0.tar.gz"
-  md5 "66fa17ad457d7e618191aa0f52fc402e"
+  url "http://mirrors.nics.utk.edu/cran/src/base/R-3/R-3.2.2.tar.gz"
+  md5 "57cef5c2e210a5454da1979562a10e5b"
   
   module_commands [
                    "unload PE-gnu PE-pgi PE-intel PE-cray",
                    "unload r",
-                   "load PrgEnv-intel",
+                   "load PE-gnu",
                    "load szip",
-                   "load acml/5.3.0",
                    "load sprng",
-                   "load netcdf-parallel",
-                   "load zeromq"
+                   "load netcdf-parallel"
+#                   "load zeromq"
                   ]
   def install
     r_home = "#{prefix}/lib64/R"
@@ -53,34 +52,34 @@ class RFormula < Formula
     #disabled for ACML: stopifnot(is.nan(log(0) %*% 0))
     # see http://devgurus.amd.com/message/1255852#1255852
     # (2) swap in the library with a symlink after the install:
-    if module_is_available?("acml/5.3.0")
-      acml_prefix = module_environment_variable("acml/5.3.0", "ACML_DIR")
-      acml_lib = "#{acml_prefix}/gfortran64_fma4_mp/lib"
-      system "mv #{r_home}/lib/libRblas.so #{r_home}/lib/libRblas.so.keep"
-      system "ln -s #{acml_lib}/libacml_mp.so #{r_home}/lib/libRblas.so"
-    end
+    ##if module_is_available?("acml/5.3.0")
+    ##  acml_prefix = module_environment_variable("acml/5.3.0", "ACML_DIR")
+    ##  acml_lib = "#{acml_prefix}/gfortran64_fma4_mp/lib"
+    ##  system "mv #{r_home}/lib/libRblas.so #{r_home}/lib/libRblas.so.keep"
+    ##  system "ln -s #{acml_lib}/libacml_mp.so #{r_home}/lib/libRblas.so"
+    ##end
 
-    # Patch rzmq package. Patch needed to find zeromq include and lib.
-    #   Didn't work via CPPFLAGS and LD_LIBRARY_PATH, so patching PKG_CPPFLAGS
-    #   and PKG_LIBS. There must be an easier way to do this!
-    rzmq_file = "rzmq_0.7.7.tar.gz"
-    system "wget http://mirrors.nics.utk.edu/cran/src/contrib/#{rzmq_file}"
-    zeromq_dir = module_environment_variable("zeromq", "ZEROMQ_DIR")
-    system "tar -xvzf #{rzmq_file}"
-    # note that ./ path prefix was added in the generated diff file below
-    patch <<-EOF.strip_heredoc
-      diff -rupN ./rzmq/src/Makevars ./rzmq_p/src/Makevars
-      --- ./rzmq/src/Makevars	2014-12-04 11:01:48.000000000 -0500
-      +++ ./rzmq_p/src/Makevars	2014-12-04 11:01:48.000000000 -0500
-      @@ -1,5 +1,5 @@
-       ## -*- mode: makefile; -*-
+    # # Patch rzmq package. Patch needed to find zeromq include and lib.
+    # #   Didn't work via CPPFLAGS and LD_LIBRARY_PATH, so patching PKG_CPPFLAGS
+    # #   and PKG_LIBS. There must be an easier way to do this!
+    # rzmq_file = "rzmq_0.7.7.tar.gz"
+    # system "wget http://mirrors.nics.utk.edu/cran/src/contrib/#{rzmq_file}"
+    # zeromq_dir = module_environment_variable("zeromq", "ZEROMQ_DIR")
+    # system "tar -xvzf #{rzmq_file}"
+    # # note that ./ path prefix was added in the generated diff file below
+    # patch <<-EOF.strip_heredoc
+    #   diff -rupN ./rzmq/src/Makevars ./rzmq_p/src/Makevars
+    #   --- ./rzmq/src/Makevars	2014-12-04 11:01:48.000000000 -0500
+    #   +++ ./rzmq_p/src/Makevars	2014-12-04 11:01:48.000000000 -0500
+    #   @@ -1,5 +1,5 @@
+    #    ## -*- mode: makefile; -*-
        
-       CXX_STD = CXX11
-      -PKG_CPPFLAGS = -I../inst/cppzmq
-      -PKG_LIBS = -lzmq
-      +PKG_CPPFLAGS = -I../inst/cppzmq -I#{zeromq_dir}/include
-      +PKG_LIBS = -L#{zeromq_dir}/lib -lzmq      
-    EOF
+    #    CXX_STD = CXX11
+    #   -PKG_CPPFLAGS = -I../inst/cppzmq
+    #   -PKG_LIBS = -lzmq
+    #   +PKG_CPPFLAGS = -I../inst/cppzmq -I#{zeromq_dir}/include
+    #   +PKG_LIBS = -L#{zeromq_dir}/lib -lzmq      
+    # EOF
     
     # Install several optional packages, including pbdR for SPMD:
     File.open("pInstall", "w+") do |f|
@@ -113,13 +112,13 @@ class RFormula < Formula
 
             ## Now install pbdR packages from GitHub:
             library(devtools)
-            install_github(repo="wrathematics/RNACI") 
-            install_github(repo="RBigData/pbdMPI") 
+            install_github(repo="snoweye/pbdMPI") 
             install_github(repo="RBigData/pbdSLAP") 
-            #install_github(repo="RBigData/pbdNCDF4") 
-            install_github(repo="RBigData/pbdBASE") 
-            install_github(repo="RBigData/pbdDMAT") 
+            install_github(repo="RBigData/pbdNCDF4") 
+            install_github(repo="wrathematics/pbdBASE") 
+            install_github(repo="wrathematics/pbdDMAT") 
             install_github(repo="RBigData/pbdDEMO")
+            install_github(repo="wrathematics/pbdZMQ") 
             install_github(repo="wrathematics/pbdCS")
           }
         BP()
@@ -147,7 +146,6 @@ class RFormula < Formula
       puts stderr "The xk6 version of $rnv is not available."
       exit
     } elseif [ is-loaded PE-gnu ] {
-      module load acml
       set ompidir {$OMPI_DIR}
       prepend-path PATH             $rprefix/lib64/R/bin
       prepend-path LD_LIBRARY_PATH  $ompidir/lib
@@ -155,7 +153,6 @@ class RFormula < Formula
       prepend-path INCLUDE_PATH     $rprefix/lib64/R/include
       setenv OMP_NUM_THREADS 1
       puts stderr "Parallel Batch Use (see r-pbd.org) via mpirun Rscript."
-      puts stderr "OMP_NUM_THREADS set to 1. Change as needed to use ACML."
     } else {
        puts stderr "The current PE version of $rnv is not available."
        exit
