@@ -1,5 +1,6 @@
 class HsiFormula < Formula
   homepage "http://www.mgleicher.us/index.html/hsi/"
+  url "none"
 
   def install
   end
