@@ -1,6 +1,6 @@
 class UdunitsFormula < Formula
   homepage "http://www.unidata.ucar.edu/software/udunits/"
-  url "ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.24.tar.gz"
+  url "ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.20.tar.gz"
 
   module_commands do
     pe = "PE-"

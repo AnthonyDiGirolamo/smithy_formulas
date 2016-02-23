@@ -2,7 +2,15 @@ class Antlr2Formula < Formula
   homepage "http://www.antlr2.org/"
   url "http://www.antlr2.org/download/antlr-2.7.7.tar.gz"
 
-  modules ["java"]
+  module_commands do
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+    [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel",
+      "load #{pe}gnu",
+      "load java"
+    ]
+  end
+  
 
   def install
     module_list
