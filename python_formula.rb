@@ -19,6 +19,13 @@ class PythonFormula < Formula
     end
   end
 
+  concern for_version("3.5.1") do
+    included do
+      url "https://www.python.org/ftp/python/3.5.1/Python-3.5.1.tgz"
+      md5 "be78e48cdfc1a7ad90efff146dce6cfe"
+    end
+  end
+
   def install
     module_list
     ENV["CPPFLAGS"] = "-I#{sqlite.prefix}/include"
