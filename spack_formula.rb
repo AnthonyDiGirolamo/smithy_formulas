@@ -24,7 +24,7 @@ class SpackFormula < Formula
     end
     Dir["#{@hooksprefix}/*.py"].each do |hook|
       hook_name = hook.split("/").last
-      system "ln #{hook} #{@prefix}/lib/spack/spack/hooks/#{hook_name}"
+      system "ln -f #{hook} #{@prefix}/lib/spack/spack/hooks/#{hook_name}"
     end
   end
 
