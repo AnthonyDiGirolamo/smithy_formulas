@@ -135,15 +135,19 @@ class RFormula < Formula
 
     if [ is-loaded PE-pathscale ] {
       puts stderr "The pathscale version of $rnv is not available."
+      puts "Please switch to the GNU programming environment."
       exit
     } elseif [ is-loaded PE-pgi ] {
-      puts stderr "The pgi version of $rnv is not available."
+      puts stderr "A pgi version of $rnv is not available."
+      puts "Please switch to the GNU programming environment."
       exit
     } elseif [ is-loaded PE-intel ] {
       puts stderr "The intel version of $rnv is not available."
+      puts "Please switch to the GNU programming environment."
       exit
     } elseif [ is-loaded PE-cray ] {
       puts stderr "The xk6 version of $rnv is not available."
+      puts "Please switch to the GNU programming environment."
       exit
     } elseif [ is-loaded PE-gnu ] {
       set ompidir {$OMPI_DIR}
@@ -155,6 +159,7 @@ class RFormula < Formula
       puts stderr "Parallel Batch Use (see r-pbd.org) via mpirun Rscript."
     } else {
        puts stderr "The current PE version of $rnv is not available."
+       puts "Please switch to the GNU programming environment."
        exit
     }
   MODULEFILE

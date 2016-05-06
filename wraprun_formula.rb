@@ -1,6 +1,6 @@
 class WraprunFormula < Formula
   homepage "https://github.com/olcf/wraprun"
-  url "https://github.com/olcf/wraprun/archive/v0.2.1.tar.gz"
+  url "https://github.com/olcf/wraprun/archive/v0.2.2.tar.gz"
 
   supported_build_names /python2.7/, /python3/
 
@@ -108,6 +108,14 @@ class WraprunFormula < Formula
     }
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
+
+    if { ! [ is-loaded python ] } {
+      puts stderr "WARNING: Wraprun requires python."
+      puts stderr "The default python module is being loaded by wraprun but it will not be removed when the wraprun module is unloaded."
+      puts stderr "Manually load any python module version prior to wraprun to supress this message."
+      puts stderr ""
+      module load python
+    }
 
     prereq python
     module load python_yaml
