@@ -3,7 +3,6 @@ class PythonH5pyFormula < Formula
 
   supported_build_names /python.*_hdf5.*/
 
-  params hdf5_module_name: cray_system? ? "cray-hdf5" : "hdf5"
 
   additional_software_roots [ config_value("lustre-software-root")[hostname] ]
   #additional_software_roots [ config_value("lustre-software-root").fetch(hostname) ] if cray_system?
@@ -12,6 +11,20 @@ class PythonH5pyFormula < Formula
     included do
       url "https://pypi.python.org/packages/source/h/h5py/h5py-2.5.0.tar.gz"
       md5 "6e4301b5ad5da0d51b0a1e5ac19e3b74"
+    end
+  end
+
+  concern for_version("2.6.0_parallel") do    #Same package as for_version(2.6.0), but allows to turn on hdf5-parallel support with version number
+    included do
+      url "https://pypi.python.org/packages/source/h/h5py/h5py-2.6.0.tar.gz"
+      md5 "ec476211bd1de3f5ac150544189b0bf4"
+    end
+  end
+
+  concern for_version("2.6.0") do
+    included do
+      url "https://pypi.python.org/packages/source/h/h5py/h5py-2.6.0.tar.gz"
+      md5 "ec476211bd1de3f5ac150544189b0bf4"
     end
   end
 
@@ -35,6 +48,17 @@ class PythonH5pyFormula < Formula
   end
 
   module_commands do
+    hdf5_module_name = ""
+    case cray_system? 
+    when true
+      if version =~ /([\d\.]+)_parallel/
+        hdf5_module_name = "cray-hdf5-parallel"
+      else
+        hdf5_module_name = "cray-hdf5"
+      end
+    when false
+      hdf5_module_name = "hdf5"
+    end
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
 
@@ -45,42 +69,45 @@ class PythonH5pyFormula < Formula
 
     commands << "unload python"
     commands << "load #{python_module_from_build_name}"
-    commands << "load python_numpy"
-    commands << "swap python_numpy python_numpy/#{$1}" if build_name =~ /numpy([\d\.]+)/
+    commands << "load python_mpi4py"
+    commands << "load python_numpy/1.9.2"
+    #commands << "swap python_numpy python_numpy/#{$1}" if build_name =~ /numpy([\d\.]+)/
     commands << "load python_cython"
     commands << "load python_nose"
     commands << "load szip"
+    commands << "load python_setuptools"
 
     commands << "load #{hdf5_module_name}"
     commands << "swap #{hdf5_module_name} #{hdf5_module_name}/#{$1}" if build_name =~ /hdf5([\d\.]+)/
     commands
   end
 
+  hdf5_module_name = ""
+  
   def install
+    case cray_system? 
+    when true
+      if version =~ /([\d\.]+)_parallel/
+        hdf5_module_name = "cray-hdf5-parallel"
+      else
+        hdf5_module_name = "cray-hdf5"
+      end
+    when false
+      hdf5_module_name = "hdf5"
+    end
     module_list
 
     hdf5_prefix = module_environment_variable(hdf5_module_name, "HDF5_DIR")
+    mpich_prefix = module_environment_variable("cray-mpich", "CRAY_MPICH2_DIR")
 
-    ENV["CPPFLAGS"] = "-I#{hdf5_prefix}/include"
-    ENV["LDFLAGS"]  = "-L#{hdf5_prefix}/lib"
+    ENV["CPPFLAGS"] = "-I#{hdf5_prefix}/include -I#{mpich_prefix}/include"
+    ENV["LDFLAGS"]  = "-L#{hdf5_prefix}/lib -L#{mpich_prefix}/lib"
+    
 
+    system_python "setup.py configure --mpi --hdf5=#{hdf5_prefix}" if version =~ /([\d\.]+)_parallel/
     system_python "setup.py install --prefix=#{prefix}"
     #system_python "setup.py build"
     #system_python "setup.py test"
-  end
-
-  def test
-    module_list
-    Dir.chdir prefix
-    system "PYTHONPATH=$PYTHONPATH:#{prefix}/lib/#{python_libdir(current_python_version)}/site-packages",
-      "LD_LIBRARY_PATH=#{prefix}/lib:$LD_LIBRARY_PATH",
-      "python -c 'import nose, h5py; h5py.run_tests()'"
-
-    notice_warn <<-EOF.strip_heredoc
-      Testing h5py manually:
-      module load python python_nose python_numpy python_h5py
-      python -c 'import nose, h5py; h5py.run_tests()'
-    EOF
   end
 
 
@@ -96,8 +123,8 @@ class PythonH5pyFormula < Formula
     prereq python
     module load #{hdf5_module_name}
     prereq #{hdf5_module_name}
-    module load python_numpy
-    prereq python_numpy
+    module load python_numpy/1.9.2
+    prereq python_numpy/1.9.2
 
     <%= python_module_build_list @package, @builds %>
     set PREFIX <%= @package.version_directory %>/$BUILD
