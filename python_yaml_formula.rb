@@ -4,7 +4,7 @@ class PythonYamlFormula < Formula
   # python 
   # import yaml
 
-  homepage "https://pypi.python.org/pypi/PyYAM"
+  homepage "https://pypi.python.org/pypi/PyYAML"
   url "http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz"
   additional_software_roots [ config_value("lustre-software-root")[hostname] ]
 

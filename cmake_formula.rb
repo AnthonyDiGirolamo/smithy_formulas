@@ -1,6 +1,6 @@
 class CmakeFormula < Formula
   homepage "http://www.cmake.org/"
-  url      "http://www.cmake.org/files/v2.8/cmake-2.8.11.2.tar.gz"
+  url      "http://www.cmake.org/files/v3.5/cmake-3.5.0.tar.gz"
 
   module_commands [ "purge" ]
 
@@ -13,10 +13,10 @@ class CmakeFormula < Formula
 
     Dir.chdir prefix
     patch <<-EOF.strip_heredoc
-      diff --git a/share/cmake-2.8/Modules/Platform/Linux-Intel.cmake.original b/share/cmake-2.8/Modules/Platform/Linux-Intel
+      diff --git a/share/cmake-3.5/Modules/Platform/Linux-Intel.cmake.original b/share/cmake-3.5/Modules/Platform/Linux-Intel
       index 2394f10..ad2c75a 100644
-      --- a/share/cmake-2.8/Modules/Platform/Linux-Intel.cmake.original
-      +++ b/share/cmake-2.8/Modules/Platform/Linux-Intel.cmake
+      --- a/share/cmake-3.5/Modules/Platform/Linux-Intel.cmake.original
+      +++ b/share/cmake-3.5/Modules/Platform/Linux-Intel.cmake
       @@ -38,7 +38,8 @@ macro(__linux_compiler_intel lang)
 
          # We pass this for historical reasons.  Projects may have

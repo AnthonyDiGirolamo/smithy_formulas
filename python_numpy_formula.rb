@@ -19,7 +19,7 @@ class PythonNumpyFormula < Formula
   depends_on do
     dependencies = [ python_module_from_build_name ]
     dependencies << "cblas/20110120/*acml*"   if build_name.include? "acml"
-    dependencies << "cblas/20110120/*libsci*" if build_name.include? "libsci"
+    #dependencies << "cblas/20110120/*libsci*" if build_name.include? "libsci"
     dependencies
   end
 
@@ -34,6 +34,7 @@ class PythonNumpyFormula < Formula
     commands << "load acml"        if build_name.include? "acml"
     commands << "load cray-libsci" if build_name.include? "libsci"
     commands << "load fftw"
+    commands << "load /sw/xk6/cblas/20110120/modulefile/cblas/20110120"
 
     commands << "unload python"
     commands << "load #{python_module_from_build_name}"
@@ -47,6 +48,7 @@ class PythonNumpyFormula < Formula
     ml_prefix = ""
     inc_dirs  = ""
     lib_name  = ""
+    cblas = module_environment_variable("/sw/#{arch}/cblas/20110120/modulefile/cblas/20110120", "CBLAS_DIR")
 
     FileUtils.mkdir_p "#{prefix}/lib"
 
@@ -60,19 +62,20 @@ class PythonNumpyFormula < Formula
     if build_name.include? "acml"
       ml_prefix = module_environment_variable("acml", "ACML_BASE_DIR")
       ml_prefix += "/gfortran64"
-      FileUtils.cp "#{cblas.prefix}/lib/libcblas.a", "#{prefix}/lib", verbose: true
+      FileUtils.cp "#{cblas}/lib/libcblas.a", "#{prefix}/lib", verbose: true
       FileUtils.cp "#{ml_prefix}/lib/libacml.a",     "#{prefix}/lib", verbose: true
       FileUtils.cp "#{ml_prefix}/lib/libacml.so",    "#{prefix}/lib", verbose: true
       inc_dirs = "#{cblas.prefix}/include"
       lib_name  = "acml"
-    elsif build_name.include? "libsci"
-      ENV['CC']  = 'cc'
-      ENV['CXX'] = 'CC'
+    elsif build_name.include? "craylibsci"
+      puts "Building for Cray-libsci"
+      ENV['CC']  = 'gcc'
+      ENV['CXX'] = 'g++'
       ml_prefix = module_environment_variable("cray-libsci", "CRAY_LIBSCI_PREFIX_DIR")
-      FileUtils.cp "#{cblas.prefix}/lib/libcblas.a", "#{prefix}/lib", verbose: true
+      puts "#{ml_prefix}"
+      FileUtils.cp "#{cblas}/lib/libcblas.a", "#{prefix}/lib", verbose: true
       FileUtils.cp "#{ml_prefix}/lib/libsci_gnu.a",  "#{prefix}/lib", verbose: true
       FileUtils.cp "#{ml_prefix}/lib/libsci_gnu.so", "#{prefix}/lib", verbose: true
-
       FileUtils.ln_s "#{prefix}/lib/libsci_gnu.so", "#{prefix}/lib/libsci_gnu_51.so.5", verbose: true, force: true
       inc_dirs = "#{ml_prefix}/include"
       lib_name  = "sci_gnu"
@@ -102,20 +105,6 @@ class PythonNumpyFormula < Formula
 
     system_python "setup.py build"
     system_python "setup.py install --prefix=#{prefix} --compile"
-  end
-
-  def test
-    module_list
-    Dir.chdir prefix
-    system "PYTHONPATH=$PYTHONPATH:#{prefix}/lib/#{python_libdir(current_python_version)}/site-packages",
-      "LD_LIBRARY_PATH=#{prefix}/lib:$LD_LIBRARY_PATH",
-      "python -c 'import nose, numpy; numpy.test()'"
-
-    notice_warn <<-EOF.strip_heredoc
-      Testing numpy manually:
-      module load python python_nose python_numpy
-      python -c 'import nose, numpy; numpy.test()'
-    EOF
   end
 
   modulefile do
