@@ -1,6 +1,6 @@
 class WraprunFormula < Formula
   homepage "https://github.com/olcf/wraprun"
-  url "https://github.com/olcf/wraprun/archive/v0.2.3.tar.gz"
+  url "https://github.com/olcf/wraprun/archive/v0.2.4.tar.gz"
 
   supported_build_names /python2.7/, /python3/
 
@@ -136,6 +136,7 @@ class WraprunFormula < Formula
 		prepend-path PATH            $PREFIX/bin
 		prepend-path LD_LIBRARY_PATH $PREFIX/lib
 		prepend-path PYTHONPATH      $PREFIX/lib/$LIBDIR/site-packages
+		prepend-path MANPATH         $PREFIX/share/man/man1
 
     # The libfmpich library is suffixed with the PE name, so we must extract it
     set compiler $env(PE_ENV)
