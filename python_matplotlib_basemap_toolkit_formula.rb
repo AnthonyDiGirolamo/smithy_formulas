@@ -16,6 +16,7 @@ class PythonMatplotlibBasemapToolkitFormula < Formula
     
     commands << "unload python"
     commands << "load #{python_module_from_build_name}"
+    commands << "load geos"
     commands << "load python_numpy/1.9.2"
     commands << "load python_matplotlib/1.4.3"
   end
@@ -33,8 +34,9 @@ class PythonMatplotlibBasemapToolkitFormula < Formula
     # One line description
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    prereq PrgEnv-gnu
-    prereq python/2.7.3
+    prereq PrgEnv-gnu PE-gnu
+    prereq python
+    prereq geos
     prereq python_numpy/1.9.2
     prereq python_matplotlib/1.4.3
 

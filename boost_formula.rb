@@ -1,6 +1,13 @@
 class BoostFormula < Formula
   homepage "http://www.boost.org/"
 
+  concern for_version("1.59.0") do
+    included do
+      url "http://downloads.sourceforge.net/project/boost/boost/1.59.0/boost_1_59_0.tar.bz2"
+      sha1 "b94de47108b2cdb0f931833a7a9834c2dd3ca46e"
+    end
+  end
+
   concern for_version("1.58.0") do
     included do
       url "http://hivelocity.dl.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2"

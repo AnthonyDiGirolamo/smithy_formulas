@@ -24,5 +24,6 @@ class SerfFormula < Formula
 
     prepend-path PATH      $PREFIX/bin
     prepend-path MANPATH   $PREFIX/share/man
+    prepend-path LD_LIBRARY_PATH $PREFIX/lib
   MODULEFILE
 end

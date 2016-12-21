@@ -3,7 +3,7 @@ class DyninstapiFormula < Formula
   url "http://www.dyninst.org/sites/default/files/downloads/dyninst/8.1.2/DyninstAPI-8.1.2.tgz"
   version "8.1.2"
 
-  depends_on [ "boost/1.54.0", "libelf", "libdwarf" ]
+  depends_on [ "boost", "libelf", "libdwarf" ]
 
   module_commands [
     "unload PrgEnv-cray PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi",

@@ -86,6 +86,7 @@ class DarshanFormula < Formula
 
     set PREFIX <%= @package.version_directory %>/$BUILD
     
+    setenv       DARSHAN_HOME $PREFIX
     prepend-path PE_PKGCONFIG_LIBS darshan-runtime
     prepend-path PKG_CONFIG_PATH $PREFIX/lib/pkgconfig
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
@@ -96,8 +97,8 @@ class DarshanFormula < Formula
         puts stderr "Please set DARSHAN_LOGPATH to an existing directory in one"
         puts stderr "of the Lustre workspaces (\\$MEMBERWORK, \\$PROJWORK, \\$WORLDWORK)"
         puts stderr "For example:"
-        puts stderr "  export DARSHAN_LOGPATH=\\$MEMBERWORK/<projID>/<username>/myLogs (in bash)"
-        puts stderr "  setenv DARSHAN_LOGPATH \\$MEMBERWORK/<projID>/<username>/myLogs (in tcsh)"
+        puts stderr "  export DARSHAN_LOGPATH=\\$MEMBERWORK/<projID>/myLogs (in bash)"
+        puts stderr "  setenv DARSHAN_LOGPATH \\$MEMBERWORK/<projID>/myLogs (in tcsh)"
         puts stderr ""
      }
 

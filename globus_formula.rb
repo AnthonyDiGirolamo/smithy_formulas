@@ -16,7 +16,7 @@ class GlobusFormula < Formula
   modulefile <<-MODULEFILE.strip_heredoc
 	#%Module
 	set vers   5.2.5
-	set PREFIX /sw/xe6/globus/5.2.5/sles11.1_gnu4.3.4
+	set PREFIX <%= @package.prefix %>
 
 	proc ModulesHelp { } {
 	  puts stderr "Sets up environment to use Globus $vers"

@@ -5,48 +5,30 @@ class Hdf5Formula < Formula
 
   depends_on "szip"
 
-  #module_commands do
-  #  pe = "PE-"
-  #  pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
-
-  #  commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
-  #  case build_name
-  #  when /gnu/
-  #    commands << "load #{pe}gnu"
-  #    commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
-  #  when /pgi/
-  #    commands << "load #{pe}pgi"
-  #    commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
-  #  when /intel/
-  #    commands << "load #{pe}intel"
-  #    commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
-  #  when /cray/
-  #    commands << "load #{pe}cray"
-  #    commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
-  #  end
-
-  #  commands << "load szip"
-  #  commands << "swap xtpe-interlagos xtpe-istanbul" if pe == "PrgEnv-"
-  #  commands
-  #end
-
   module_commands do
-    commands = [ "purge" ]
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+
+    commands = [ "unload #{pe}gnu #{pe}pgi #{pe}cray #{pe}intel" ]
     case build_name
     when /gnu/
-     commands << "load gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
-    when /pgi/
-      commands << "load pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
+      commands << "load #{pe}gnu"
+      commands << "load gcc"
+      commands << "swap gcc gcc/#{$1}" if build_name =~ /gnu([\d\.]+)/
+     when /pgi/
+       commands << "load #{pe}pgi"
+       commands << "swap pgi pgi/#{$1}" if build_name =~ /pgi([\d\.]+)/
     when /intel/
-      commands << "load intel/#{$1}" if build_name =~ /intel([\d\.]+)/
-    when /cray/
-      commands << "load cce/#{$1}" if build_name =~ /cray([\d\.]+)/
+      commands << "load #{pe}intel"
+      commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+     when /cray/
+       commands << "load #{pe}cray"
+       commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
     end
-    commands << "load openmpi/1.8.2"
+
     commands << "load szip"
     commands
   end
-
 
   def install
     module_list
@@ -115,9 +97,12 @@ class Hdf5Formula < Formula
       end
     end
 
+    gccdir = module_environment_variable("gcc", "GCC_PATH")
+    set_gcc_env_vars = "PATH=#{gccdir}/bin:$PATH LD_LIBRARY_PATH=#{gccdir}/snos/lib64:$LD_LIBRARY_PATH "
+    args.unshift set_gcc_env_vars
     system args
-    system "make"
-    system "make install"
+    system set_gcc_env_vars + "make"
+    system set_gcc_env_vars + "make install"
   end
 
   modulefile do

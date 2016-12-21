@@ -22,9 +22,9 @@ class EsmfFormula < Formula
         commands << "swap intel intel/#{$1}"
       end
     end
-    commands << "swap xtpe-interlagos xtpe-istanbul"
+    #commands << "swap xtpe-interlagos xtpe-istanbul"
     # netcdf/4.2.0 c++ api not compatible!
-    commands << "load szip netcdf/4.1.3" if build_name.include?("netcdf")
+    commands << "load szip cray-netcdf" if build_name.include?("netcdf")
     commands
   end
 
@@ -41,6 +41,7 @@ class EsmfFormula < Formula
     ENV["ESMF_INSTALL_HEADERDIR"] = "#{prefix}/include"
 
     ENV["ESMF_COMPILER"] = "default"
+    ENV["ESMF_COMPILER"] = "gnu"   if build_name.include?("gnu")
     ENV["ESMF_COMPILER"] = "pgi"   if build_name.include?("pgi")
     ENV["ESMF_COMPILER"] = "intel" if build_name.include?("intel")
 

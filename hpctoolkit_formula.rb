@@ -7,8 +7,10 @@ class HpctoolkitFormula < Formula
       "unload PrgEnv-gnu PrgEnv-pgi PrgEnv-intel PrgEnv-cray",
       "load PrgEnv-gnu",
       "load subversion",
-      "load papi/5.1.0.2",
+      "load papi",
+      "load serf",
       "load java",
+      "load cmake"
     ]
     commands << "cudatoolkit" if build_name.include? "cuda"
     commands
@@ -81,12 +83,7 @@ class HpctoolkitFormula < Formula
     module load java
     prereq java
 
-    if [ is-loaded cudatoolkit ] {
-      set build cle4.1_gnu4.7.2_papi5.1.0.2_cuda5.0.35.102
-    } else {
-      set build cle4.1_gnu4.7.2_papi5.1.0.2
-    }
-    set PREFIX <%= @package.version_directory %>/$build
+    set PREFIX <%= @package.prefix %>
 
     # temporary install to lustre for runtime libs
     set tmpinstall_hpctk /tmp/work/$env(USER)/.hpctk_install/$env(PE_ENV)

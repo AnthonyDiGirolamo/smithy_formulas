@@ -23,6 +23,20 @@ class PythonPipFormula < Formula
     end
   end
 
+  concern for_version("8.1.1") do
+    included do
+      url "https://pypi.python.org/packages/source/p/pip/pip-8.1.1.tar.gz"
+      md5 "6b86f11841e89c8241d689956ba99ed7"
+    end
+  end
+
+  concern for_version("8.1.2") do
+    included do
+      url "https://pypi.python.org/packages/e7/a8/7556133689add8d1a54c0b14aeff0acb03c64707ce100ecd53934da1aa13/pip-8.1.2.tar.gz"
+      md5 "87083c0b9867963b29f7aba3613e8f4a"
+    end
+  end
+
   depends_on do
     [ python_module_from_build_name,
       "python_setuptools/*/*#{python_version_from_build_name}" ]

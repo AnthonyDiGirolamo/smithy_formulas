@@ -25,15 +25,6 @@ class LibdwarfFormula < Formula
       "CXXFLAGS=\"#{libelf_inc}\""
     libdwarf_buildpath = "#{prefix}/source/libdwarf/"
     system "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:#{libdwarf_buildpath} make"
-    return
-
-
-    # build libdwarf and dwarfdump libraries
-    Dir.chdir libdwarf_buildpath 
-    system config_cmd
-    ENV['LD_LIBRARY_PATH'] = ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath
-    #system "LD_LIBRARY_PATH=#{ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath + "libdwarf"} make dd"
-    system "LD_LIBRARY_PATH=#{ENV['LD_LIBRARY_PATH'] + ":" + libdwarf_buildpath + "libdwarf"} make"
 
     # installation prep
     install_bin = prefix+"/bin"
@@ -45,6 +36,8 @@ class LibdwarfFormula < Formula
     FileUtils.mkdir_p install_lib
     FileUtils.mkdir_p install_man
 
+    puts install_bin
+
     # install libraries
     Dir.chdir prefix+"/source/libdwarf"
     FileUtils.install 'libdwarf.a', install_lib, :mode => 0644
@@ -54,7 +47,7 @@ class LibdwarfFormula < Formula
     FileUtils.install %w{ dwarf.h libdwarf.h }, install_inc, :mode => 0644
 
     # install executables
-    Dir.chdir prefix+"/source/libdwarf-#{version}/dwarfdump"
+    Dir.chdir prefix+"/source/dwarfdump"
     FileUtils.install 'dwarfdump', install_bin, :mode => 0755
     FileUtils.install 'dwarfdump.conf', install_lib, :mode => 0644
     FileUtils.install 'dwarfdump.1', install_man, :mode => 0644

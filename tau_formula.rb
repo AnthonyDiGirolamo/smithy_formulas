@@ -1,108 +1,150 @@
 class TauFormula < Formula
   homepage "http://www.cs.uoregon.edu/research/tau/"
-  url "http://www.cs.uoregon.edu/research/tau/tau_releases/tau-2.22.3b4.tar.gz"
-  version "2.22.3"
+  url "http://www.cs.uoregon.edu/research/tau/tau_releases/tau-2.24.1.tar.gz"
+  version "2.24.1"
 
-  depends_on [ "otf", "pdtoolkit", "libelf", "libdwarf", "boost", "dyninstapi" ]
+  # only put non-PrgEnv-dependent modules in depends_on
+  #depends_on [ "otf", "pdtoolkit", "libelf", "libdwarf", "boost", "dyninstapi" ]
+  depends_on [ "otf", "pdtoolkit" ]
 
+  # NOTE: on Titan, please 'module swap craype-interlagos craype-istanbul' before running 'smithy formula install'
   module_commands do
-    commands = [ "unload PrgEnv-cray PrgEnv-gnu PrgEnv-intel PrgEnv-pathscale PrgEnv-pgi" ]
+    pe = "PE-"
+    pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
+    commands = [ "unload #{pe}cray #{pe}gnu #{pe}intel #{pe}pgi" ]
     case build_name
     when /cray/
-      commands << "load PrgEnv-cray"
+      commands << "load #{pe}cray"
       if build_name =~ /cray([\d\.]+)/
         compiler_module = "cce/#{$1}"
         commands << "swap cce #{compiler_module}" if module_is_available? compiler_module
       end
     when /gnu/
-      commands << "load PrgEnv-gnu"
+      commands << "load #{pe}gnu"
       if build_name =~ /gnu([\d\.]+)/
         compiler_module = "gcc/#{$1}"
         commands << "swap gcc #{compiler_module}" if module_is_available? compiler_module
       end
     when /intel/
-      commands << "load PrgEnv-intel"
+      commands << "load #{pe}intel"
       if build_name =~ /intel([\d\.]+)/
         compiler_module = "intel/#{$1}"
         commands << "swap intel #{compiler_module}" if module_is_available? compiler_module
       end
     when /pgi/
-      commands << "load PrgEnv-pgi"
+      commands << "load #{pe}pgi"
       if build_name =~ /pgi([\d\.]+)/
         compiler_module = "pgi/#{$1}"
         commands << "swap pgi #{compiler_module}" if module_is_available? compiler_module
       end
     end
-    commands << "load cudatoolkit" if build_name =~ /gpu/
-    commands << "load papi"
-    commands
+    commands << "load cudatoolkit"
+    commands << "load papi" if module_is_available?("papi")
   end
 
   def install
     module_list
 
-    papi_prefix = module_environment_variable("papi", "PATH")
-    papi_prefix = File.dirname(papi_prefix)
+    platform = ENV['HOSTNAME']
 
-    config_args = [
-      "./configure -prefix=#{prefix} -arch=craycnl -mpi -bfd=download -iowrapper",
-      "-dyninst=#{dyninstapi.prefix} -dwarf=#{libdwarf.prefix}",
-      "-otf=#{otf.prefix} -papi=#{papi_prefix}",
-      "-pdt=#{pdtoolkit.prefix} -pdt_c++=g++"
-    ]
-    # which thread package? openmp or pthread
-    if build_name.include?("openmp")
-      config_args << "-openmp -opari"
-    else
-      config_args << "-pthread"
-    end
-    # need CUDA support?
-    if build_name.include?("gpu")
-      config_args << "-cuda=$CUDATOOLKIT_HOME"
-    end
-    # eos uses mpich 3.x
-    if ENV['HOSTNAME'] =~ /^eos/
-      config_args << "-useropt=\"-I#{libelf.prefix}/include -I#{boost.prefix}/include -I#{dyninstapi.prefix}/include -DTAU_MPICH3\""
-    else
-      config_args << "-useropt=\"-I#{libelf.prefix}/include -I#{boost.prefix}/include -I#{dyninstapi.prefix}/include\""
-    end
+    # common configuration options
+    have_user_flags = 0
+    user_flags = ""
+    config_args = "./configure -prefix=#{prefix} -mpi -iowrapper"
+    config_args << " -otf=#{otf.prefix}"
+    config_args << " -pdt=#{pdtoolkit.prefix} -pdt_c++=/opt/gcc/4.9.0/bin/g++"
 
-    if build_name.include?("cray")
-      ENV['CC'] = "gcc"
-      ENV['CXX'] = "g++"
-      ENV['F77'] = "ftn"
-      ENV['F90'] = "ftn"
-      ENV['FC'] = "ftn"
-    elsif build_name.include?("gnu")
-      ENV['CC'] = "gcc"
-      ENV['CXX'] = "g++"
-      ENV['F77'] = "gfortran"
-      ENV['F90'] = "gfortran"
-      ENV['FC'] = "gfortran"
+    if build_name.include?("gnu")
+       config_args << " -cc=gcc -c++=g++ -fortran=gnu"
     elsif build_name.include?("intel")
-      ENV['CC'] = "icc"
-      ENV['CXX'] = "icpc"
-      ENV['F77'] = "ifort"
-      ENV['F90'] = "ifort"
-      ENV['FC'] = "ifort"
+       config_args << " -cc=icc -c++=icpc -fortran=intel"
     elsif build_name.include?("pgi")
-      ENV['CC'] = "pgcc"
-      ENV['CXX'] = "pgCC"
-      ENV['F77'] = "pgf77"
-      ENV['F90'] = "pgf90"
-      ENV['FC'] = "pgf90"
+       config_args << " -cc=pgcc -c++=pgCC -fortran=pgi"
+    elsif build_name.include?("cray")
+       config_args << " -cc=cc -c++=CC -fortran=cray"
     end
-    ENV['MPICC'] = "cc"
-    ENV['MPICXX'] = "CC"
-    ENV['MPIF77'] = "ftn"
 
-    system config_args
-    system "make all"
-    system "make install"
-    system "cd #{prefix}/craycnl/lib && ln -s Makefile.tau-* Makefile.tau"
+    if (platform =~ /^eos/) || (platform =~ /^titan/) # Cray platforms
+       config_args << " -bfd=download"
+       config_args << " -arch=craycnl"
+
+       # use compiler wrappers for MPI builds
+       ENV['MPICC'] = "cc"
+       ENV['MPICXX'] = "CC"
+       ENV['MPIF77'] = "ftn"
+
+#       if build_name.include?("cray")
+#          # force Cray compiler into GNU compatibility mode
+#          have_user_flags = 1
+#          user_flags << " -h gnu"
+#       end
+
+       # need CUDA support?
+#       if build_name.include?("gpu")
+#          config_args << " -cuda=$CUDATOOLKIT_HOME"
+#       else
+#          config_args << " -DISABLESHARED"
+#       end
+    end
+
+    # configure for PAPI when available
+    if module_is_available?("papi")
+       papi_prefix = module_environment_variable("papi", "PATH")
+       papi_prefix = File.dirname(papi_prefix)
+       config_args << " -papi=#{papi_prefix}"
+    end
+
+    # configure for Score-P when available
+    if module_is_available?("scorep/.1.4.2")
+       scorep_prefix = module_environment_variable("scorep", "SCOREP_DIR")
+       config_args << " -scorep=#{scorep_prefix}"
+    end
+
+    # configure for libunwind when available
+    if module_is_available?("libunwind")
+        libunwind_prefix = module_environment_variable("libunwind", "LIBUNWIND_DIR")
+        config_args << " -unwind=#{libunwind_prefix}"
+    else
+        config_args << " -unwind=download"
+    end
+
+    # add user flags
+    if have_user_flags != 0
+       config_args << " -useropt=\'#{user_flags}\'"
+    end
+
+    # build for OpenMP, Pthreads and gpu
+    openmp_config = "-openmp -opari"
+    if build_name.include?("intel")
+        openmp_config + " -ompt=download"
+    end
+    pthread_config = "-pthread"
+    gpu_config = "-cuda=$CUDATOOLKIT_HOME"
+
+    system "#{config_args} #{openmp_config} -DISABLESHARED 2>&1 | tee smithy.openmp.cfglog"
+    system "(make clean && make all && make install) 2>&1 | tee smithy.openmp.bldlog"
+
+    system "#{config_args} #{pthread_config} -DISABLESHARED  2>&1 | tee smithy.pthread.cfglog"
+    system "(make clean && make all && make install) 2>&1 | tee smithy.pthread.bldlog"
+
+    if (platform =~ /^eos/) || (platform =~ /^titan/)
+        system "#{config_args} #{openmp_config} #{gpu_config} 2>&1 | tee smithy.openmpi.gpu.cfglog"
+        system "(make clean && make all && make install) 2>&1 | tee smithy.openmp.gpu.bldlog"
+
+        system "#{config_args} #{pthread_config} #{gpu_config} 2>&1 | tee smithy.pthread.gpu.cfglog"
+        system "(make clean && make all && make install) 2>&1 | tee smithy.pthread.gpu.bldlog"
+    end
+
+    # make OpenMP the default TAU config
+#    if (platform =~ /^eos/) || (platform =~ /^titan/)
+#       system "test -d #{prefix}/craycnl/lib && cd #{prefix}/craycnl/lib && ln -s Makefile.tau-*openmp* Makefile.tau"
+#    else
+#       system "test -d #{prefix}/x86_64/lib && cd #{prefix}/x86_64/lib && ln -s Makefile.tau-*openmp* Makefile.tau"
+#    end
   end
 
-  modulefile <<-MODULEFILE.strip_heredoc
+  modulefile do
+    <<-MODULEFILE.strip_heredoc
     #%Module
     proc ModulesHelp { } {
         puts stderr "TAU - Tuning and Analysis Utilities"
@@ -113,51 +155,21 @@ class TauFormula < Formula
 
     # runtime requires otf, papi, pdtoolkit
     module load otf papi pdtoolkit
-    prereq otf papi pdtoolkit
 
     # viewers require java
     module load java
-    prereq java
 
-    if [ is-loaded PrgEnv-gnu ] { 
-      if [ is-loaded gcc/4.7.2 ] {
-        set BUILD_PE gnu4.7.2
-      } elseif [ is-loaded gcc/4.8.1 ] {
-        set BUILD_PE gnu4.8.1
-      }
-    } elseif [ is-loaded PrgEnv-pgi ] { 
-      if [ is-loaded pgi/12.10.0 ] {
-        set BUILD_PE pgi12.10.0
-      } elseif [ is-loaded pgi/13.7.0 ] {
-        set BUILD_PE pgi13.7.0
-      }
-    } elseif [ is-loaded PrgEnv-intel ] { 
-      if [ is-loaded intel/12.1.3.293 ] {
-        set BUILD_PE intel12.1.3.293
-      } elseif [ is-loaded intel/13.1.3.192 ] {
-        set BUILD_PE intel13.1.3.192
-      }
-    } elseif [ is-loaded PrgEnv-cray ] { 
-      if [ is-loaded cce/8.1.4 ] {
-        set BUILD_PE cray8.1.4
-      } elseif [ is-loaded cce/8.1.9 ] {
-        set BUILD_PE cray8.1.9
-      }
-    }
-    if {![info exists BUILD_PE]} {
-      puts stderr "[module-info name] not available for current programming environment"
-      break
-    }
-    set BUILD $BUILD_PE
-    <% if @package.build_name =~ /openmp/ %>
-    set BUILD ${BUILD}_openmp
-    <% end %>
-    <% if @package.build_name =~ /gpu/ %>
-    set BUILD ${BUILD}_gpu
-    <% end %>
+    <% if @builds.size > 1 %>
+    <%= module_build_list @package, @builds, :prgenv_prefix => #{module_is_available?("PrgEnv-gnu") ? '"PrgEnv-"' : '"PE-"'} %>
 
     set PREFIX <%= @package.version_directory %>/$BUILD
-    set ARCH $PREFIX/craycnl
+    <% else %>
+    set PREFIX <%= @package.prefix %>
+    <% end %>
+
+    set VERSION <%= @package.version %>
+    #set ARCH $PREFIX/craycnl
+    set ARCH $PREFIX/x86_64
     set LIBS $ARCH/lib
 
     # environ setup
@@ -171,5 +183,6 @@ class TauFormula < Formula
     prepend-path MANPATH         $PREFIX/man
     prepend-path LIBRARY_PATH    $LIBS
     prepend-path LD_LIBRARY_PATH $LIBS
-  MODULEFILE
+    MODULEFILE
+  end
 end

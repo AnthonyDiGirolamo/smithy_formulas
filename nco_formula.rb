@@ -22,6 +22,13 @@ class NcoFormula < Formula
     end
   end
 
+  concern for_version "4.5.5" do
+    included do
+      url "https://github.com/nco/nco/archive/4.5.5.tar.gz"
+      md5 "9f1f1cb149ad6407c5a03c20122223ce"
+    end
+  end
+
   module_commands do
     pe = "PE-"
     pe = "PrgEnv-" if module_is_available?("PrgEnv-gnu")
@@ -34,7 +41,7 @@ class NcoFormula < Formula
       "load #{netcdf_module}",
       "load #{hdf5_module}",
       "load gsl",
-      "load udunits",
+      "load udunits/2.2.20",
       "load java" ]
   end
 

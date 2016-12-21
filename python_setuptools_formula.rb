@@ -17,6 +17,13 @@ class PythonSetuptoolsFormula < Formula
     end
   end
 
+  concern for_version("18.7") do
+    included do
+      url "https://pypi.python.org/packages/source/s/setuptools/setuptools-18.7.1.tar.gz"
+      md5 "a0984da9cd8d7b582e1fd7de67dfdbcc"
+    end
+  end
+
   depends_on do
     python_module_from_build_name
   end

@@ -1,11 +1,12 @@
 class UberftpFormula < Formula
   homepage "https://github.com/JasonAlt/UberFTP"
-  url "https://github.com/JasonAlt/UberFTP/archive/Version_2_7.tar.gz"
+  url "https://github.com/JasonAlt/UberFTP/archive/Version_2_8.tar.gz"
+  md5 "bc7a159955a9c4b9f5f42f3d2b8fc830"
 
-  version "2.7"
+  version "2.8"
 
   module_commands do
-    [ "load globus" ]
+    [ "load globus/5.2.5" ]
   end
 
   def install
@@ -29,7 +30,7 @@ class UberftpFormula < Formula
     }
     module-whatis "<%= @package.name %> <%= @package.version %>"
 
-    prereq globus/5.2.1
+    prereq globus/5.2.5
     set PREFIX <%= @package.prefix %>
 
     prepend-path PATH      $PREFIX/bin

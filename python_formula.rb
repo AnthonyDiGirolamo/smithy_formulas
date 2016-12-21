@@ -19,6 +19,13 @@ class PythonFormula < Formula
     end
   end
 
+  concern for_version("3.5.1") do
+    included do
+      url "https://www.python.org/ftp/python/3.5.1/Python-3.5.1.tgz"
+      md5 "be78e48cdfc1a7ad90efff146dce6cfe"
+    end
+  end
+
   def install
     module_list
     ENV["CPPFLAGS"] = "-I#{sqlite.prefix}/include"
@@ -49,14 +56,6 @@ class PythonFormula < Formula
     conflict python
 
     set PREFIX <%= @package.prefix %>
-
-    set LUSTREPREFIX /lustre/atlas/sw/xk7/<%= @package.name %>/<%= @package.version %>/<%= @package.build_name %>
-
-    prepend-path PATH            $LUSTREPREFIX/bin
-    prepend-path LD_LIBRARY_PATH $LUSTREPREFIX/lib
-    prepend-path MANPATH         $LUSTREPREFIX/share/man
-    prepend-path PKG_CONFIG_PATH $LUSTREPREFIX/lib/pkgconfig
-    prepend-path PYTHONPATH      $LUSTREPREFIX/lib/#{python_libdir(version)}/site-packages
 
     prepend-path PATH            $PREFIX/bin
     prepend-path LD_LIBRARY_PATH $PREFIX/lib
