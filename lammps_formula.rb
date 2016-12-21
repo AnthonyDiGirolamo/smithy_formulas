@@ -73,6 +73,7 @@ class LammpsFormula < Formula
     when /intel/
       commands << "load #{pe}intel"
       commands << "swap intel intel/#{$1}" if build_name =~ /intel([\d\.]+)/
+      commands << "load gcc"
     when /cray/
       commands << "load #{pe}cray"
       commands << "swap cce cce/#{$1}" if build_name =~ /cray([\d\.]+)/
@@ -80,7 +81,7 @@ class LammpsFormula < Formula
 
     commands << "load subversion"
     commands << "load fftw"
-    commands << "load python"
+    commands << "load python/2.7.9"
     commands << "load cudatoolkit" if module_is_available?("cudatoolkit")
     commands
   end
@@ -96,28 +97,43 @@ class LammpsFormula < Formula
 
     Dir.chdir prefix+"/source"
 
-    system "svn revert src/MAKE/MACHINES/Makefile.jaguar"
-    system "sed 's/CCFLAGS =/CCFLAGS = -O2 -march=bdver1 -ftree-vectorize -Wl,-Bdynamic -L#{python.prefix}\\/lib/' src/MAKE/MACHINES/Makefile.jaguar > src/MAKE/MACHINES/Makefile.titan"
-    system "sed -i 's/LINKFLAGS =/LINKFLAGS = -O2 -march=bdver1 -ftree-vectorize -Wl,-Bdynamic -L#{python.prefix}\\/lib/' src/MAKE/MACHINES/Makefile.titan"
+    h = `hostname`
+    args = ""
+    if h.to_s =~ /"titan"/
+      h = h.to_s.split('-')[0]
+      system "svn revert src/MAKE/MACHINES/Makefile.jaguar"
+      system "sed 's/CCFLAGS =/CCFLAGS = -O2 -ftree-vectorize -Wl,-Bdynamic -L\\/sw\\/xc30\\/python\\/2.7.9\\/sles11.3_gnu4.8.2\\/lib/' src/MAKE/MACHINES/Makefile.jaguar > src/MAKE/MACHINES/Makefile.#{h}"
+      system "sed -i 's/LINKFLAGS =/LINKFLAGS = -O2 -ftree-vectorize -Wl,-Bdynamic -L\\/sw\\/xc30\\/python\\/2.7.9\\/sles11.3_gnu4.8.2\\/lib/' src/MAKE/MACHINES/Makefile.#{h}"
 
-   # Dir.chdir prefix + "/source/lib/gpu"
-   # system "make -j8 -f Makefile.xk7 clean"
-   # system "make -j8 -f Makefile.xk7"
-   # 
-    Dir.chdir prefix + "/source/lib/reax"
-    system "sed 's/ gfortran/ftn/g' Makefile.gfortran > Makefile.cray"
-    system "make -f Makefile.cray clean"
-    system "make -f Makefile.cray"
+      Dir.chdir prefix + "/source/lib/gpu"
+      system "make -j8 -f Makefile.xk7 clean"
+      system "make -j8 -f Makefile.xk7"
+    
+      Dir.chdir prefix + "/source/lib/reax"
+      system "sed 's/ gfortran/ftn/g' Makefile.gfortran > Makefile.cray"
+      system "make -f Makefile.cray clean"
+      system "make -f Makefile.cray"
 
-    Dir.chdir prefix + "/source/lib/meam"
-    system "sed 's/ gfortran/ftn/g' Makefile.gfortran > Makefile.cray"
-    system "make -f Makefile.cray clean"
-    system "make -f Makefile.cray"
+      Dir.chdir prefix + "/source/lib/meam"
+      system "sed 's/ gfortran/ftn/g' Makefile.gfortran > Makefile.cray"
+      system "make -f Makefile.cray clean"
+      system "make -f Makefile.cray"
+      args = "yes-std no-kim yes-meam no-poems yes-gpu yes-reax no-kokkos no-voronoi yes-kspace yes-molecule yes-rigid yes-colloid yes-manybody yes-misc"
+    else
+      h = h.to_s.split('-')[0]
+      system "svn revert src/MAKE/Makefile.mpi"
+      system "sed 's/CCFLAGS =/CCFLAGS = -g -O3 -DLAMMPS_MEMALIGN=64/' src/MAKE/Makefile.mpi > src/MAKE/MACHINES/Makefile.#{h}"
+      system "sed -i 's/LINKFLAGS =/LINKFLAGS = -g -O /' src/MAKE/MACHINES/Makefile.#{h}"
+      system "sed -i 's/LINK =.*/LINK = CC/' src/MAKE/MACHINES/Makefile.#{h}"
+      system "sed -i 's/CC =.*/CC = CC/' src/MAKE/MACHINES/Makefile.#{h}"
+      args = "yes-user-intel no-kim no-meam no-poems no-gpu no-reax no-kokkos no-voronoi yes-kspace yes-molecule yes-rigid yes-colloid yes-manybody yes-misc"
+    end
+
 
     Dir.chdir prefix + "/source/src"
     system "make no-all clean-all"
-    system "make yes-std no-kim yes-meam no-poems no-gpu yes-reax no-kokkos no-voronoi yes-kspace yes-molecule yes-rigid yes-colloid yes-manybody yes-misc"
-    system "LDFLAGS=\"-L#{python.prefix}/lib\" make titan"
+    system "make #{args}"
+    system "make #{h}"
 
     system "mkdir -p #{prefix}/bin"
     system "cp #{prefix}/source/src/lmp_* #{prefix}/bin/"
